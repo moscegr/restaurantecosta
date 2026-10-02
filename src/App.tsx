@@ -3,6 +3,8 @@ import { Navbar } from './components/Navbar';
 import { Sidebar, type ActiveTab } from './components/Sidebar';
 import { DashboardView } from './components/Hoy/DashboardView';
 import { PosView } from './components/Vender/PosView';
+import { MeseroView } from './components/Mesero/MeseroView';
+import { CocinaView } from './components/Cocina/CocinaView';
 import { CuartosView } from './components/Cuartos/CuartosView';
 import { InventarioView } from './components/Inventario/InventarioView';
 import { DineroView } from './components/Dinero/DineroView';
@@ -14,11 +16,22 @@ import { db } from './db/db';
 import { initDatabaseWithSeedData } from './db/seedData';
 import type { BusinessConfig, Product, Room } from './types';
 
+const TAB_TITLES: Record<ActiveTab, string> = {
+  hoy: '🏠 Resumen Ejecutivo & Asistente IA',
+  vender: '🛍️ Punto de Venta Touch (Caja)',
+  mesero: '📝 Comandero Móvil para Meseros',
+  cocina: '👨‍🍳 Pantalla de Cocina & Brasas (KDS en vivo)',
+  cuartos: '🛏️ Tablero de Cuartos & Cabañas',
+  inventario: '📦 Control de Inventario & Platillos',
+  dinero: '💵 Control de Dinero & Caja (RESICO SAT)',
+};
+
 export function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('hoy');
   const [config, setConfig] = useState<BusinessConfig | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [pendingKitchenCount, setPendingKitchenCount] = useState<number>(0);
   const [isReady, setIsReady] = useState(false);
 
   // Modales Globales
@@ -29,7 +42,7 @@ export function App() {
   // Inicialización de la base de datos
   const loadAppData = async () => {
     try {
-      // Si la base tiene pocos productos (versión semilla anterior), forzar recarga con los datos abundantes
+      // Si la base tiene pocos productos (versión inicial anterior), forzar recarga con los datos abundantes
       const count = await db.products.count();
       if (count < 15) {
         await initDatabaseWithSeedData(true);
@@ -37,10 +50,11 @@ export function App() {
         await initDatabaseWithSeedData();
       }
 
-      const [allConfig, allProducts, allRooms] = await Promise.all([
+      const [allConfig, allProducts, allRooms, kitchenOrdersCount] = await Promise.all([
         db.businessConfig.toArray(),
         db.products.toArray(),
         db.rooms.toArray(),
+        db.kitchenOrders.where('status').anyOf(['pendiente', 'en_preparacion']).count(),
       ]);
 
       if (allConfig.length > 0) {
@@ -48,6 +62,7 @@ export function App() {
       }
       setProducts(allProducts);
       setRooms(allRooms);
+      setPendingKitchenCount(kitchenOrdersCount);
       setIsReady(true);
     } catch (err) {
       console.error('Error inicializando la aplicación:', err);
@@ -86,6 +101,7 @@ export function App() {
         config={config}
         occupiedRoomsCount={occupiedRoomsCount}
         lowStockCount={lowStockCount}
+        pendingKitchenOrdersCount={pendingKitchenCount}
         onOpenPublicMenu={() => setIsPublicMenuOpen(true)}
         onOpenSettings={() => setIsConfigOpen(true)}
         onOpenQuickExpense={() => setIsQuickExpenseOpen(true)}
@@ -95,6 +111,7 @@ export function App() {
       <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0 bg-slate-100">
         <Navbar
           config={config}
+          activeTabTitle={TAB_TITLES[activeTab]}
           onOpenPublicMenu={() => setIsPublicMenuOpen(true)}
           onOpenSettings={() => setIsConfigOpen(true)}
         />
@@ -109,6 +126,14 @@ export function App() {
 
           {activeTab === 'vender' && (
             <PosView config={config} />
+          )}
+
+          {activeTab === 'mesero' && (
+            <MeseroView />
+          )}
+
+          {activeTab === 'cocina' && (
+            <CocinaView />
           )}
 
           {activeTab === 'cuartos' && (

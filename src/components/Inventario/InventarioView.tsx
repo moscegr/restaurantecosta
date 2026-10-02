@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { PackagePlus, Search } from 'lucide-react';
+import { PackagePlus, Search, Plus, Edit3 } from 'lucide-react';
 import type { Product } from '../../types';
 import { db } from '../../db/db';
 import { RestockModal } from './RestockModal';
+import { ProductModal } from './ProductModal';
 
 export const InventarioView: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProductForRestock, setSelectedProductForRestock] = useState<Product | null>(null);
   const [isRestockOpen, setIsRestockOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [filterSemaphore, setFilterSemaphore] = useState<'todos' | 'critico' | 'minimo' | 'optimo'>('todos');
 
   const loadProducts = async () => {
@@ -23,6 +26,16 @@ export const InventarioView: React.FC = () => {
   const handleOpenRestock = (product?: Product) => {
     setSelectedProductForRestock(product || null);
     setIsRestockOpen(true);
+  };
+
+  const handleOpenNewProduct = () => {
+    setEditingProduct(null);
+    setIsProductModalOpen(true);
+  };
+
+  const handleOpenEditProduct = (product: Product) => {
+    setEditingProduct(product);
+    setIsProductModalOpen(true);
   };
 
   // Contadores para el semáforo
@@ -43,7 +56,7 @@ export const InventarioView: React.FC = () => {
 
   return (
     <div className="flex-1 overflow-y-auto pb-16 p-3 sm:p-5 max-w-5xl mx-auto space-y-4">
-      {/* Cabecera & Botón de Nueva Compra */}
+      {/* Cabecera & Botones de Nuevo Producto y Entrada */}
       <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
@@ -55,13 +68,23 @@ export const InventarioView: React.FC = () => {
             </p>
           </div>
 
-          <button
-            onClick={() => handleOpenRestock()}
-            className="py-3 px-4 bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white font-extrabold rounded-xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 touch-press"
-          >
-            <PackagePlus className="w-5 h-5 text-amber-300" />
-            <span>+ Registrar Compra / Entrada</span>
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={handleOpenNewProduct}
+              className="py-2.5 px-3.5 bg-cyan-800 hover:bg-cyan-900 active:bg-cyan-950 text-white font-extrabold rounded-xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-1.5 touch-press"
+            >
+              <Plus className="w-4 h-4 text-amber-300 stroke-[3]" />
+              <span>+ Nuevo Platillo / Producto</span>
+            </button>
+
+            <button
+              onClick={() => handleOpenRestock()}
+              className="py-2.5 px-3.5 bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white font-extrabold rounded-xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-1.5 touch-press"
+            >
+              <PackagePlus className="w-4 h-4 text-amber-300" />
+              <span>+ Entrada / Compra</span>
+            </button>
+          </div>
         </div>
 
         {/* Semáforo de Estado (Slide 22) */}
@@ -188,7 +211,7 @@ export const InventarioView: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <div className="text-right">
                     <span
                       className={`text-lg sm:text-xl font-black block leading-none ${
@@ -206,9 +229,19 @@ export const InventarioView: React.FC = () => {
                     </span>
                   </div>
 
+                  {/* Botón Editar Producto */}
+                  <button
+                    onClick={() => handleOpenEditProduct(p)}
+                    className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-all touch-press"
+                    title="Editar producto o precio"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                  </button>
+
+                  {/* Botón Entrada de Inventario */}
                   <button
                     onClick={() => handleOpenRestock(p)}
-                    className="py-2 px-3 bg-cyan-50 hover:bg-cyan-100 text-cyan-800 font-bold text-xs rounded-xl border border-cyan-200 transition-all touch-press flex items-center gap-1"
+                    className="py-2 px-2.5 sm:px-3 bg-cyan-50 hover:bg-cyan-100 text-cyan-800 font-bold text-xs rounded-xl border border-cyan-200 transition-all touch-press flex items-center gap-1"
                   >
                     <span>+ Entrada</span>
                   </button>
@@ -225,6 +258,14 @@ export const InventarioView: React.FC = () => {
         allProducts={products}
         isOpen={isRestockOpen}
         onClose={() => setIsRestockOpen(false)}
+        onSuccess={loadProducts}
+      />
+
+      {/* Modal para Agregar o Editar Producto */}
+      <ProductModal
+        productToEdit={editingProduct}
+        isOpen={isProductModalOpen}
+        onClose={() => setIsProductModalOpen(false)}
         onSuccess={loadProducts}
       />
     </div>

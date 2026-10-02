@@ -51,6 +51,28 @@ export interface Sale {
   status: 'completada' | 'cancelada';
 }
 
+export type OrderStatus = 'pendiente' | 'en_preparacion' | 'listo' | 'entregado' | 'cobrado';
+
+export interface KitchenOrderItem {
+  productId: number;
+  name: string;
+  quantity: number;
+  price: number;
+  notes?: string;
+}
+
+export interface KitchenOrder {
+  id?: number;
+  tableOrRamada: string;
+  waiterName: string;
+  items: KitchenOrderItem[];
+  total: number;
+  status: OrderStatus;
+  createdAt: string; // ISO
+  dateString: string; // YYYY-MM-DD
+  notes?: string;
+}
+
 export type RoomStatus = 'libre' | 'ocupada' | 'limpieza' | 'reservada';
 export type RoomType = 'Sencilla' | 'Doble' | 'Familiar' | 'Cabaña Frente al Mar';
 

@@ -1,5 +1,5 @@
 import { db } from './db';
-import type { Product, Room, BusinessConfig, Sale, Transaction } from '../types';
+import type { Product, Room, BusinessConfig, Sale, Transaction, KitchenOrder } from '../types';
 
 export const initialConfig: BusinessConfig = {
   businessName: 'Ramada & Cabañas Las Brisas',
@@ -587,24 +587,66 @@ export function generateSeedHistoricalData(): { sales: Sale[]; transactions: Tra
   return { sales, transactions };
 }
 
+export const initialKitchenOrders: KitchenOrder[] = [
+  {
+    tableOrRamada: 'Ramada 3 (Playa)',
+    waiterName: 'Toño (Mesero)',
+    items: [
+      { productId: 1, name: 'Pescado a la Talla', quantity: 2, price: 320, notes: 'Bien dorado a las brasas' },
+      { productId: 10, name: 'Chilate Costeño con Pan', quantity: 3, price: 50, notes: 'Bien frío con bastante espuma' },
+    ],
+    total: 790,
+    status: 'pendiente',
+    createdAt: new Date(Date.now() - 4 * 60000).toISOString(),
+    dateString: new Date().toISOString().split('T')[0],
+    notes: 'Mesa con niños, salsas aparte',
+  },
+  {
+    tableOrRamada: 'Mesa 2 (Palapa)',
+    waiterName: 'Lupita (Mesera)',
+    items: [
+      { productId: 3, name: 'Langosta Fresca a la Mantequilla', quantity: 1, price: 480, notes: 'Poco ajo' },
+      { productId: 13, name: 'Michelada Preparada', quantity: 2, price: 85, notes: 'Escarchada con limón y sal' },
+    ],
+    total: 650,
+    status: 'en_preparacion',
+    createdAt: new Date(Date.now() - 11 * 60000).toISOString(),
+    dateString: new Date().toISOString().split('T')[0],
+  },
+  {
+    tableOrRamada: 'Ramada 1 (Playa)',
+    waiterName: 'Toño (Mesero)',
+    items: [
+      { productId: 4, name: 'Pulpo Enamorado Costeño', quantity: 1, price: 290 },
+      { productId: 6, name: 'Ceviche Costeño Mixto', quantity: 1, price: 180, notes: 'Aguacate extra' },
+    ],
+    total: 470,
+    status: 'listo',
+    createdAt: new Date(Date.now() - 16 * 60000).toISOString(),
+    dateString: new Date().toISOString().split('T')[0],
+  },
+];
+
 export async function initDatabaseWithSeedData(force = false) {
   const productCount = await db.products.count();
   if (productCount > 0 && !force) {
     return;
   }
 
-  await db.transaction('rw', [db.products, db.rooms, db.sales, db.transactions, db.businessConfig], async () => {
+  await db.transaction('rw', [db.products, db.rooms, db.sales, db.transactions, db.businessConfig, db.kitchenOrders], async () => {
     if (force) {
       await db.products.clear();
       await db.rooms.clear();
       await db.sales.clear();
       await db.transactions.clear();
       await db.businessConfig.clear();
+      await db.kitchenOrders.clear();
     }
 
     await db.businessConfig.add(initialConfig);
     await db.products.bulkAdd(initialProducts);
     await db.rooms.bulkAdd(initialRooms);
+    await db.kitchenOrders.bulkAdd(initialKitchenOrders);
 
     const { sales, transactions } = generateSeedHistoricalData();
     await db.sales.bulkAdd(sales);

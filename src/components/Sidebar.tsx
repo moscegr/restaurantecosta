@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Home, ShoppingBag, BedDouble, Package, Wallet, 
-  QrCode, Settings, Wifi, WifiOff, Compass, PlusCircle 
+  QrCode, Settings, Wifi, WifiOff, Compass, PlusCircle,
+  UtensilsCrossed, ChefHat 
 } from 'lucide-react';
 import type { BusinessConfig } from '../types';
 
-export type ActiveTab = 'hoy' | 'vender' | 'cuartos' | 'inventario' | 'dinero';
+export type ActiveTab = 'hoy' | 'vender' | 'mesero' | 'cocina' | 'cuartos' | 'inventario' | 'dinero';
 
 interface SidebarProps {
   activeTab: ActiveTab;
@@ -13,6 +14,7 @@ interface SidebarProps {
   config: BusinessConfig | null;
   occupiedRoomsCount?: number;
   lowStockCount?: number;
+  pendingKitchenOrdersCount?: number;
   onOpenPublicMenu: () => void;
   onOpenSettings: () => void;
   onOpenQuickExpense: () => void;
@@ -24,6 +26,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   config,
   occupiedRoomsCount = 0,
   lowStockCount = 0,
+  pendingKitchenOrdersCount = 0,
   onOpenPublicMenu,
   onOpenSettings,
   onOpenQuickExpense,
@@ -56,7 +59,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Vender',
       icon: ShoppingBag,
       badge: null,
-      desc: 'Punto de Venta',
+      desc: 'Caja POS',
+    },
+    {
+      id: 'mesero' as ActiveTab,
+      label: 'Mesero',
+      icon: UtensilsCrossed,
+      badge: null,
+      desc: 'Tomar Orden',
+    },
+    {
+      id: 'cocina' as ActiveTab,
+      label: 'Cocina',
+      icon: ChefHat,
+      badge: pendingKitchenOrdersCount > 0 ? `${pendingKitchenOrdersCount}` : null,
+      badgeColor: 'bg-amber-500',
+      desc: 'Pantalla KDS',
     },
     {
       id: 'cuartos' as ActiveTab,
@@ -84,12 +102,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   return (
-    <aside className="w-20 sm:w-56 md:w-60 bg-gradient-to-b from-cyan-950 via-teal-950 to-slate-950 text-white flex flex-col justify-between shrink-0 border-r border-teal-800/40 select-none shadow-2xl z-30 h-full">
+    <aside className="w-18 sm:w-56 md:w-60 bg-gradient-to-b from-cyan-950 via-teal-950 to-slate-950 text-white flex flex-col justify-between shrink-0 border-r border-teal-800/40 select-none shadow-2xl z-30 h-full">
       {/* 1. Header / Logo del Negocio */}
       <div>
-        <div className="p-3 sm:p-4 border-b border-teal-800/40 flex items-center gap-2.5 sm:gap-3 bg-cyan-900/30">
-          <div className="w-10 h-10 rounded-xl bg-amber-400 text-cyan-950 flex items-center justify-center font-black text-xl shadow-lg border border-amber-300 shrink-0">
-            <Compass className="w-6 h-6 text-cyan-950" />
+        <div className="p-2.5 sm:p-4 border-b border-teal-800/40 flex items-center gap-2.5 sm:gap-3 bg-cyan-900/30">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-400 text-cyan-950 flex items-center justify-center font-black text-xl shadow-lg border border-amber-300 shrink-0">
+            <Compass className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-950" />
           </div>
           <div className="hidden sm:block min-w-0">
             <h1 className="text-base font-black tracking-tight leading-tight text-white m-0 truncate">
@@ -102,7 +120,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* 2. Botón de Gasto Rápido en Sidebar */}
-        <div className="p-2 sm:p-3">
+        <div className="p-1.5 sm:p-3">
           <button
             onClick={onOpenQuickExpense}
             className="w-full py-2.5 px-2 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-md transition-all touch-press"
@@ -114,7 +132,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* 3. Menú de Navegación Vertical Táctil */}
-        <nav className="px-2 sm:px-3 space-y-1.5 mt-1">
+        <nav className="px-1.5 sm:px-3 space-y-1 mt-0.5">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -123,7 +141,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 key={item.id}
                 onClick={() => onChangeTab(item.id)}
-                className={`w-full flex items-center gap-3 p-2.5 sm:py-3 sm:px-3.5 rounded-2xl font-bold transition-all text-left touch-press relative ${
+                className={`w-full flex items-center gap-2.5 sm:gap-3 p-2 sm:py-2.5 sm:px-3 rounded-2xl font-bold transition-all text-left touch-press relative ${
                   isActive
                     ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-cyan-950 shadow-lg font-black'
                     : 'text-teal-100 hover:bg-white/10 active:bg-white/15'
@@ -146,7 +164,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                 <div className="hidden sm:flex flex-1 items-center justify-between min-w-0">
                   <div>
-                    <span className="text-sm block leading-tight">{item.label}</span>
+                    <span className="text-xs sm:text-sm block leading-tight">{item.label}</span>
                     <span
                       className={`text-[10px] block font-medium ${
                         isActive ? 'text-cyan-950/80' : 'text-teal-300/70'
@@ -158,7 +176,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                   {item.badge && (
                     <span
-                      className={`text-white text-[10px] font-black rounded-full px-2 py-0.5 shadow ${
+                      className={`text-white text-[10px] font-black rounded-full px-1.5 py-0.5 shadow ${
                         item.badgeColor || 'bg-amber-500'
                       }`}
                     >
@@ -169,7 +187,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                 {/* Borde activo sutil */}
                 {isActive && (
-                  <div className="sm:hidden absolute left-0 top-2 bottom-2 w-1 bg-cyan-950 rounded-r-full"></div>
+                  <div className="sm:hidden absolute left-0 top-1.5 bottom-1.5 w-1 bg-cyan-950 rounded-r-full"></div>
                 )}
               </button>
             );
@@ -178,10 +196,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* 4. Footer del Menú Lateral: Conexión, Menú QR y Ajustes */}
-      <div className="p-2 sm:p-3 border-t border-teal-800/40 bg-cyan-950/60 space-y-2">
+      <div className="p-1.5 sm:p-3 border-t border-teal-800/40 bg-cyan-950/60 space-y-1.5">
         {/* Indicador de Red Offline-First */}
         <div
-          className={`flex items-center justify-center sm:justify-start gap-2 p-2 rounded-xl text-xs font-semibold border ${
+          className={`flex items-center justify-center sm:justify-start gap-1.5 p-1.5 sm:p-2 rounded-xl text-xs font-semibold border ${
             isOnline
               ? 'bg-emerald-500/20 text-emerald-200 border-emerald-400/30'
               : 'bg-amber-500/20 text-amber-200 border-amber-400/30 animate-pulse'
@@ -193,7 +211,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           ) : (
             <WifiOff className="w-3.5 h-3.5 text-amber-400 shrink-0" />
           )}
-          <span className="hidden sm:inline truncate">
+          <span className="hidden sm:inline truncate text-[11px]">
             {isOnline ? 'En línea' : 'Sin conexión'}
           </span>
         </div>
@@ -202,20 +220,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
           <button
             onClick={onOpenPublicMenu}
-            className="flex items-center justify-center gap-1.5 py-2 px-2 bg-teal-800/80 hover:bg-teal-700 active:bg-teal-900 rounded-xl text-xs font-bold text-teal-100 transition-all touch-press"
+            className="flex items-center justify-center gap-1 py-1.5 px-2 bg-teal-800/80 hover:bg-teal-700 active:bg-teal-900 rounded-xl text-xs font-bold text-teal-100 transition-all touch-press"
             title="Ver Menú Digital del Comensal y Código QR"
           >
-            <QrCode className="w-4 h-4 text-amber-300 shrink-0" />
-            <span className="hidden sm:inline">Menú QR</span>
+            <QrCode className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+            <span className="hidden sm:inline text-[11px]">Menú QR</span>
           </button>
 
           <button
             onClick={onOpenSettings}
-            className="flex items-center justify-center gap-1.5 py-2 px-2 bg-teal-900/60 hover:bg-teal-800 active:bg-teal-950 rounded-xl text-xs font-bold text-teal-200 transition-all touch-press"
+            className="flex items-center justify-center gap-1 py-1.5 px-2 bg-teal-900/60 hover:bg-teal-800 active:bg-teal-950 rounded-xl text-xs font-bold text-teal-200 transition-all touch-press"
             title="Ajustes del Negocio y Datos Demo"
           >
-            <Settings className="w-4 h-4 shrink-0" />
-            <span className="hidden sm:inline">Ajustes</span>
+            <Settings className="w-3.5 h-3.5 shrink-0" />
+            <span className="hidden sm:inline text-[11px]">Ajustes</span>
           </button>
         </div>
       </div>

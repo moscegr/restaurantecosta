@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Compass, Wifi, WifiOff, QrCode, Settings } from 'lucide-react';
+import { Wifi, WifiOff, QrCode, Settings, Palmtree } from 'lucide-react';
 import type { BusinessConfig } from '../types';
 
 interface NavbarProps {
   config: BusinessConfig | null;
+  activeTabTitle?: string;
   onOpenPublicMenu: () => void;
   onOpenSettings: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ config, onOpenPublicMenu, onOpenSettings }) => {
+export const Navbar: React.FC<NavbarProps> = ({ 
+  config, 
+  activeTabTitle = 'Panel de Control',
+  onOpenPublicMenu, 
+  onOpenSettings 
+}) => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   useEffect(() => {
@@ -25,43 +31,48 @@ export const Navbar: React.FC<NavbarProps> = ({ config, onOpenPublicMenu, onOpen
   }, []);
 
   return (
-    <header className="bg-gradient-to-r from-cyan-800 via-teal-700 to-cyan-900 text-white shadow-md border-b border-teal-600/30 px-3 sm:px-5 py-2.5 flex items-center justify-between select-none z-30">
-      {/* Logo e Identidad */}
-      <div className="flex items-center gap-2.5 sm:gap-3">
-        <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-amber-400 text-cyan-950 flex items-center justify-center shadow-lg font-black text-xl border-2 border-amber-300 transform active:scale-95 transition-transform">
-          <Compass className="w-6 h-6 text-cyan-900 animate-spin-slow" />
+    <header className="bg-white text-slate-800 shadow-xs border-b border-slate-200 px-3 sm:px-5 py-2.5 flex items-center justify-between select-none z-20 shrink-0">
+      {/* Sección Izquierda: Nombre del establecimiento y vista actual (SIN DUPLICADOS) */}
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+        <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-200 text-teal-800 flex items-center justify-center shrink-0">
+          <Palmtree className="w-4.5 h-4.5 text-teal-700" />
         </div>
-        <div>
-          <div className="flex items-center gap-1.5">
-            <h1 className="text-base sm:text-lg font-black tracking-tight leading-tight text-white m-0">
-              Timón <span className="text-amber-300 font-extrabold text-xs sm:text-sm tracking-wider uppercase">Costa Chica</span>
-            </h1>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <h2 className="text-xs sm:text-sm font-black text-slate-900 truncate tracking-tight m-0">
+              {config?.businessName || 'Ramada & Cabañas Las Brisas'}
+            </h2>
+            <span className="hidden md:inline text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-200">
+              {config?.municipio || 'Copala'}, Gro.
+            </span>
           </div>
-          <p className="text-xs sm:text-xs text-teal-100 font-medium truncate max-w-[190px] sm:max-w-[280px]">
-            {config?.businessName || 'Ramada & Cabañas Las Brisas'} · <span className="text-amber-200">{config?.municipio || 'Copala'}</span>
+          <p className="text-[11px] text-cyan-800 font-extrabold truncate">
+            {activeTabTitle}
           </p>
         </div>
       </div>
 
       {/* Indicador de Conexión & Botones de Acción */}
-      <div className="flex items-center gap-2 sm:gap-3">
-        {/* Badge Offline-First (Slide 11 & 22) */}
+      <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+        {/* Badge Offline-First */}
         <div
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold shadow-inner border ${
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${
             isOnline
-              ? 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40'
-              : 'bg-amber-500/20 text-amber-200 border-amber-400/40 animate-pulse'
+              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+              : 'bg-amber-50 text-amber-800 border-amber-300 animate-pulse'
           }`}
           title={isOnline ? 'Conectado a Internet' : 'Modo Sin Conexión activo. Los datos se guardan en tu tablet.'}
         >
-          <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-400' : 'bg-amber-400'}`}></span>
+          <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
           {isOnline ? (
-            <span className="flex items-center gap-1">
-              <Wifi className="w-3.5 h-3.5" /> En línea
+            <span className="flex items-center gap-1 font-bold">
+              <Wifi className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="hidden sm:inline">En línea</span>
             </span>
           ) : (
-            <span className="flex items-center gap-1">
-              <WifiOff className="w-3.5 h-3.5" /> Sin conexión
+            <span className="flex items-center gap-1 font-bold">
+              <WifiOff className="w-3.5 h-3.5 text-amber-600" />
+              <span>Sin conexión</span>
             </span>
           )}
         </div>
@@ -69,17 +80,17 @@ export const Navbar: React.FC<NavbarProps> = ({ config, onOpenPublicMenu, onOpen
         {/* Botón Ver Menú Público QR */}
         <button
           onClick={onOpenPublicMenu}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-500 active:bg-teal-700 text-white rounded-lg text-xs font-semibold shadow border border-teal-400/30 transition-all touch-press"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-800 hover:bg-cyan-900 active:bg-cyan-950 text-white rounded-xl text-xs font-bold shadow-xs transition-all touch-press"
           title="Ver Menú Digital del Cliente y Código QR"
         >
-          <QrCode className="w-4 h-4 text-amber-300" />
+          <QrCode className="w-3.5 h-3.5 text-amber-300" />
           <span className="hidden md:inline">Menú QR</span>
         </button>
 
         {/* Botón Configuración */}
         <button
           onClick={onOpenSettings}
-          className="p-2 bg-cyan-950/40 hover:bg-cyan-950/60 active:bg-cyan-950 rounded-lg text-teal-200 hover:text-white border border-teal-500/20 transition-all touch-press"
+          className="p-1.5 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 rounded-xl text-slate-700 border border-slate-200 transition-all touch-press"
           title="Configuración del Negocio y Datos Demo"
         >
           <Settings className="w-4 h-4" />

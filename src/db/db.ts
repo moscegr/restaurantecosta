@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { Product, Sale, Room, Transaction, BusinessConfig } from '../types';
+import type { Product, Sale, Room, Transaction, BusinessConfig, KitchenOrder } from '../types';
 
 export class TimonDatabase extends Dexie {
   products!: Table<Product, number>;
@@ -7,6 +7,7 @@ export class TimonDatabase extends Dexie {
   rooms!: Table<Room, number>;
   transactions!: Table<Transaction, number>;
   businessConfig!: Table<BusinessConfig, number>;
+  kitchenOrders!: Table<KitchenOrder, number>;
 
   constructor() {
     super('TimonCostaChicaDB');
@@ -16,6 +17,15 @@ export class TimonDatabase extends Dexie {
       rooms: '++id, number, status, type',
       transactions: '++id, dateString, date, type, category',
       businessConfig: '++id',
+    });
+
+    this.version(2).stores({
+      products: '++id, name, category, stock, active',
+      sales: '++id, dateString, date, status, destination',
+      rooms: '++id, number, status, type',
+      transactions: '++id, dateString, date, type, category',
+      businessConfig: '++id',
+      kitchenOrders: '++id, tableOrRamada, status, dateString, createdAt',
     });
   }
 }

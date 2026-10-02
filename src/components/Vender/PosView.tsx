@@ -8,6 +8,7 @@ import type { Product, CartItem, PaymentMethod, Sale, ProductCategory, BusinessC
 import { db } from '../../db/db';
 import { QuickPayModal } from './QuickPayModal';
 import { TicketModal } from './TicketModal';
+import { ProductModal } from '../Inventario/ProductModal';
 
 interface PosViewProps {
   config: BusinessConfig | null;
@@ -47,6 +48,7 @@ export const PosView: React.FC<PosViewProps> = ({ config }) => {
   // Modales
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [completedSale, setCompletedSale] = useState<Sale | null>(null);
 
   const loadProducts = async () => {
@@ -189,16 +191,27 @@ export const PosView: React.FC<PosViewProps> = ({ config }) => {
       <div className="flex-1 flex flex-col h-full overflow-hidden border-r border-slate-200">
         {/* Barra superior de búsqueda y categorías */}
         <div className="bg-white p-3 sm:p-4 border-b border-slate-200 space-y-2.5 shadow-sm">
-          {/* Campo de búsqueda */}
-          <div className="relative">
-            <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Buscar platillo, chilate, marisco o bebida..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600 focus:bg-white transition-all"
-            />
+          {/* Campo de búsqueda y botón rápido para agregar platillos */}
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Buscar platillo, chilate, marisco o bebida..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600 focus:bg-white transition-all"
+              />
+            </div>
+
+            <button
+              onClick={() => setIsProductModalOpen(true)}
+              className="px-3 py-2.5 bg-cyan-800 hover:bg-cyan-900 active:bg-cyan-950 text-white rounded-xl text-xs font-black flex items-center gap-1.5 shrink-0 shadow-sm touch-press"
+              title="Crear y agregar nuevo platillo al menú"
+            >
+              <Plus className="w-4 h-4 text-amber-300 stroke-[3]" />
+              <span className="hidden sm:inline">+ Agregar Platillo</span>
+            </button>
           </div>
 
           {/* Carrusel de Categorías Táctiles Grandes */}
@@ -427,6 +440,13 @@ export const PosView: React.FC<PosViewProps> = ({ config }) => {
         config={config}
         isOpen={isTicketModalOpen}
         onClose={() => setIsTicketModalOpen(false)}
+      />
+
+      {/* Modal para Crear Nuevo Platillo */}
+      <ProductModal
+        isOpen={isProductModalOpen}
+        onClose={() => setIsProductModalOpen(false)}
+        onSuccess={loadProducts}
       />
     </div>
   );
