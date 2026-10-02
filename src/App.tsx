@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
-import { BottomNav, type ActiveTab } from './components/BottomNav';
+import { Sidebar, type ActiveTab } from './components/Sidebar';
 import { DashboardView } from './components/Hoy/DashboardView';
 import { PosView } from './components/Vender/PosView';
 import { CuartosView } from './components/Cuartos/CuartosView';
@@ -29,7 +29,14 @@ export function App() {
   // Inicialización de la base de datos
   const loadAppData = async () => {
     try {
-      await initDatabaseWithSeedData();
+      // Si la base tiene pocos productos (versión semilla anterior), forzar recarga con los datos abundantes
+      const count = await db.products.count();
+      if (count < 15) {
+        await initDatabaseWithSeedData(true);
+      } else {
+        await initDatabaseWithSeedData();
+      }
+
       const [allConfig, allProducts, allRooms] = await Promise.all([
         db.businessConfig.toArray(),
         db.products.toArray(),
@@ -63,57 +70,62 @@ export function App() {
     );
   }
 
-  // Contadores para badges en BottomNav
+  // Contadores para badges en Sidebar
   const occupiedRoomsCount = rooms.filter(r => r.status === 'ocupada').length;
   const lowStockCount = products.filter(p => p.stock <= p.minStock).length;
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-100 font-sans antialiased text-slate-900 select-none">
-      {/* 1. Barra Superior con Identidad y Estado de Red */}
-      <Navbar
-        config={config}
-        onOpenPublicMenu={() => setIsPublicMenuOpen(true)}
-        onOpenSettings={() => setIsConfigOpen(true)}
-      />
-
-      {/* 2. Área de Trabajo Principal */}
-      <main className="flex-1 flex flex-col overflow-hidden relative">
-        {activeTab === 'hoy' && (
-          <DashboardView
-            onGoToTab={(tab) => setActiveTab(tab)}
-            onOpenQuickExpense={() => setIsQuickExpenseOpen(true)}
-          />
-        )}
-
-        {activeTab === 'vender' && (
-          <PosView config={config} />
-        )}
-
-        {activeTab === 'cuartos' && (
-          <CuartosView />
-        )}
-
-        {activeTab === 'inventario' && (
-          <InventarioView />
-        )}
-
-        {activeTab === 'dinero' && (
-          <DineroView config={config} />
-        )}
-      </main>
-
-      {/* 3. Barra de Navegación Táctil Inferior (Fixed) */}
-      <BottomNav
+    <div className="flex h-screen w-screen overflow-hidden bg-slate-100 font-sans antialiased text-slate-900 select-none">
+      {/* 1. Menú Lateral Izquierdo (Para tablets, pantallas touch y desktop sin traslapes) */}
+      <Sidebar
         activeTab={activeTab}
         onChangeTab={(tab) => {
           setActiveTab(tab);
-          loadAppData(); // Refresca contadores
+          loadAppData();
         }}
+        config={config}
         occupiedRoomsCount={occupiedRoomsCount}
         lowStockCount={lowStockCount}
+        onOpenPublicMenu={() => setIsPublicMenuOpen(true)}
+        onOpenSettings={() => setIsConfigOpen(true)}
+        onOpenQuickExpense={() => setIsQuickExpenseOpen(true)}
       />
 
-      {/* 4. Modal Sitio Público / Menú Digital QR */}
+      {/* 2. Área de Trabajo Principal con scroll limpio y sin elementos flotantes que tapen la vista */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0 bg-slate-100">
+        <Navbar
+          config={config}
+          onOpenPublicMenu={() => setIsPublicMenuOpen(true)}
+          onOpenSettings={() => setIsConfigOpen(true)}
+        />
+
+        <main className="flex-1 flex flex-col overflow-hidden relative">
+          {activeTab === 'hoy' && (
+            <DashboardView
+              onGoToTab={(tab) => setActiveTab(tab)}
+              onOpenQuickExpense={() => setIsQuickExpenseOpen(true)}
+            />
+          )}
+
+          {activeTab === 'vender' && (
+            <PosView config={config} />
+          )}
+
+          {activeTab === 'cuartos' && (
+            <CuartosView />
+          )}
+
+          {activeTab === 'inventario' && (
+            <InventarioView />
+          )}
+
+          {activeTab === 'dinero' && (
+            <DineroView config={config} />
+          )}
+        </main>
+      </div>
+
+      {/* 3. Modal Sitio Público / Menú Digital QR */}
       <SitioPublicoModal
         products={products}
         rooms={rooms}
@@ -122,7 +134,7 @@ export function App() {
         onClose={() => setIsPublicMenuOpen(false)}
       />
 
-      {/* 5. Modal de Configuración & Datos de Prueba */}
+      {/* 4. Modal de Configuración & Datos de Prueba */}
       <ConfigModal
         config={config}
         isOpen={isConfigOpen}
@@ -130,7 +142,7 @@ export function App() {
         onSave={loadAppData}
       />
 
-      {/* 6. Modal de Gasto Rápido Global */}
+      {/* 5. Modal de Gasto Rápido Global */}
       <QuickExpenseModal
         isOpen={isQuickExpenseOpen}
         onClose={() => setIsQuickExpenseOpen(false)}

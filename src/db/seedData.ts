@@ -54,6 +54,30 @@ export const initialProducts: Product[] = [
     active: true,
   },
   {
+    name: 'Pulpo Enamorado Costeño',
+    category: 'Especialidades del Mar',
+    price: 290,
+    costPrice: 120,
+    stock: 9,
+    minStock: 6,
+    unit: 'orden',
+    icon: '🐙',
+    description: 'Pulpo tierno cocido al punto, bañado en mayonesa sazonada, cebolla morada, apio, cilantro y chipotle.',
+    active: true,
+  },
+  {
+    name: 'Coctel Campechano (Camarón y Pulpo)',
+    category: 'Pescados y Mariscos',
+    price: 190,
+    costPrice: 75,
+    stock: 14,
+    minStock: 8,
+    unit: 'orden',
+    icon: '🍸',
+    description: 'Con salsa coctelera especial costeña, aguacate hass, cilantro y galletitas saladas.',
+    active: true,
+  },
+  {
     name: 'Ceviche Costeño Mixto',
     category: 'Pescados y Mariscos',
     price: 180,
@@ -66,6 +90,18 @@ export const initialProducts: Product[] = [
     active: true,
   },
   {
+    name: 'Caldo de Camarón y Pescado',
+    category: 'Pescados y Mariscos',
+    price: 210,
+    costPrice: 85,
+    stock: 11,
+    minStock: 6,
+    unit: 'plato',
+    icon: '🍲',
+    description: 'Consomé caliente con camarones con cabeza, verduras de la región, epazote y chile guajillo.',
+    active: true,
+  },
+  {
     name: 'Tiritas de Pescado Marinadas',
     category: 'Botanas y Antojitos',
     price: 160,
@@ -75,6 +111,18 @@ export const initialProducts: Product[] = [
     unit: 'orden',
     icon: '🥗',
     description: 'Láminas de pescado fresco marinadas con limón costeño, cebolla morada y orégano.',
+    active: true,
+  },
+  {
+    name: 'Quesadillas de Camarón con Queso Cincho',
+    category: 'Botanas y Antojitos',
+    price: 130,
+    costPrice: 50,
+    stock: 18,
+    minStock: 8,
+    unit: 'orden',
+    icon: '🧀',
+    description: '3 empanadas de maíz rellenas de camarón guisado con queso costeño artesanal.',
     active: true,
   },
   {
@@ -102,7 +150,7 @@ export const initialProducts: Product[] = [
     active: true,
   },
   {
-    name: 'Cerveza Corona / Victoria (Media)',
+    name: 'Cerveza Corona / Victoria (Media Helada)',
     category: 'Bebidas y Chilate',
     price: 40,
     costPrice: 21,
@@ -111,6 +159,30 @@ export const initialProducts: Product[] = [
     unit: 'pza',
     icon: '🍺',
     description: 'Cerveza helada estilo costeño. Opcional preparada con sal, limón y chile.',
+    active: true,
+  },
+  {
+    name: 'Michelada Preparada con Camarón Seco',
+    category: 'Bebidas y Chilate',
+    price: 85,
+    costPrice: 38,
+    stock: 16,
+    minStock: 10,
+    unit: 'vaso',
+    icon: '🍹',
+    description: 'Cerveza con clamato, salsa inglesa, limón costeño, chamoy y camarones secos botaneros.',
+    active: true,
+  },
+  {
+    name: 'Refresco Yoli de Acapulco / Coca-Cola Vidrio',
+    category: 'Bebidas y Chilate',
+    price: 35,
+    costPrice: 16,
+    stock: 28,
+    minStock: 15,
+    unit: 'pza',
+    icon: '🥤',
+    description: 'Refrescos bien fríos en botella retornable de vidrio tradicional.',
     active: true,
   },
   {
@@ -126,18 +198,6 @@ export const initialProducts: Product[] = [
     active: true,
   },
   {
-    name: 'Orden de Sopes Costeños con Queso y Crema',
-    category: 'Botanas y Antojitos',
-    price: 110,
-    costPrice: 40,
-    stock: 20,
-    minStock: 10,
-    unit: 'orden',
-    icon: '🌮',
-    description: '4 sopes pellizcados con frijoles refritos, lechuga fresca, queso cincho costeño y salsa molcajeteada.',
-    active: true,
-  },
-  {
     name: 'Cocada Tradicional Horneada',
     category: 'Postres y Cocos',
     price: 35,
@@ -147,6 +207,18 @@ export const initialProducts: Product[] = [
     unit: 'pza',
     icon: '🥧',
     description: 'Dulce típico de coco rallado con piloncillo y canela.',
+    active: true,
+  },
+  {
+    name: 'Plátanos Machos Fritos con Crema y Queso',
+    category: 'Postres y Cocos',
+    price: 60,
+    costPrice: 22,
+    stock: 12,
+    minStock: 5,
+    unit: 'orden',
+    icon: '🍌',
+    description: 'Plátano maduro frito en mantequilla, con crema de rancho y queso espolvoreado.',
     active: true,
   },
 ];
@@ -171,7 +243,7 @@ export const initialRooms: Room[] = [
     type: 'Cabaña Frente al Mar',
     pricePerNight: 950,
     status: 'ocupada',
-    guestName: 'Laura Morales Cruz',
+    guestName: 'Lic. Laura Morales Cruz',
     guestPhone: '55 1234 5678',
     checkInDate: '2026-10-01',
     checkOutDate: '2026-10-02',
@@ -229,132 +301,257 @@ export const initialRooms: Room[] = [
     name: 'Cuarto 8 - El Faro',
     type: 'Sencilla',
     pricePerNight: 550,
-    status: 'libre',
+    status: 'ocupada',
+    guestName: 'Carlos Domínguez',
+    guestPhone: '741 234 8901',
+    checkInDate: '2026-10-01',
+    checkOutDate: '2026-10-02',
+    capacity: 2,
+    notes: 'Cliente frecuente de Ometepec.',
+  },
+  {
+    number: '9',
+    name: 'Cabaña 9 - Las Peñitas',
+    type: 'Familiar',
+    pricePerNight: 1100,
+    status: 'reservada',
+    guestName: 'Familia Ortiz Hernández',
+    guestPhone: '55 9876 5432',
+    checkInDate: '2026-10-03',
+    checkOutDate: '2026-10-05',
+    capacity: 5,
+    notes: 'Llegan el sábado en la mañana.',
+  },
+  {
+    number: '10',
+    name: 'Cuarto 10 - Playa Ventura',
+    type: 'Doble',
+    pricePerNight: 650,
+    status: 'limpieza',
+    notes: 'Limpieza programada tras salida de las 11 AM.',
     capacity: 2,
   },
 ];
 
-// Generar ventas históricas para alimentar la IA explicable
+// Generar ventas y gastos históricos abundantes para pruebas
 export function generateSeedHistoricalData(): { sales: Sale[]; transactions: Transaction[] } {
   const sales: Sale[] = [];
   const transactions: Transaction[] = [];
 
   const today = new Date();
-  
-  // Ventas de hoy
   const todayStr = today.toISOString().split('T')[0];
 
-  // Venta 1 de hoy
-  sales.push({
-    date: new Date(today.getTime() - 3 * 3600000).toISOString(),
-    dateString: todayStr,
-    items: [
-      { productId: 1, name: 'Pescado a la Talla', quantity: 2, price: 320, subtotal: 640 },
-      { productId: 6, name: 'Chilate Costeño', quantity: 3, price: 50, subtotal: 150 },
-      { productId: 8, name: 'Cerveza Corona', quantity: 4, price: 40, subtotal: 160 },
-    ],
-    total: 950,
-    costTotal: 414,
-    paymentMethod: 'efectivo',
-    amountPaid: 1000,
-    change: 50,
-    destination: 'Ramada 4 (Playa)',
-    status: 'completada',
+  // Ventas de HOY (Múltiples para poder navegar y ver lista completa)
+  const todaySalesData = [
+    {
+      hoursAgo: 6,
+      destination: 'Ramada 1 (Playa)',
+      items: [
+        { productId: 1, name: 'Pescado a la Talla', quantity: 2, price: 320, subtotal: 640 },
+        { productId: 10, name: 'Chilate Costeño', quantity: 4, price: 50, subtotal: 200 },
+        { productId: 12, name: 'Cerveza Corona', quantity: 6, price: 40, subtotal: 240 },
+      ],
+      total: 1080,
+      costTotal: 460,
+      paymentMethod: 'efectivo' as const,
+      amountPaid: 1100,
+      change: 20,
+    },
+    {
+      hoursAgo: 5,
+      destination: 'Mesa 4 (Palapa)',
+      items: [
+        { productId: 2, name: 'Camarones al Mojo', quantity: 2, price: 260, subtotal: 520 },
+        { productId: 6, name: 'Ceviche Costeño Mixto', quantity: 1, price: 180, subtotal: 180 },
+        { productId: 11, name: 'Agua de Coco Frío', quantity: 3, price: 45, subtotal: 135 },
+      ],
+      total: 835,
+      costTotal: 335,
+      paymentMethod: 'tarjeta' as const,
+      amountPaid: 835,
+      change: 0,
+    },
+    {
+      hoursAgo: 4,
+      destination: 'Ramada 4 (Playa)',
+      items: [
+        { productId: 1, name: 'Pescado a la Talla', quantity: 2, price: 320, subtotal: 640 },
+        { productId: 10, name: 'Chilate Costeño', quantity: 3, price: 50, subtotal: 150 },
+        { productId: 12, name: 'Cerveza Corona', quantity: 4, price: 40, subtotal: 160 },
+      ],
+      total: 950,
+      costTotal: 414,
+      paymentMethod: 'efectivo' as const,
+      amountPaid: 1000,
+      change: 50,
+    },
+    {
+      hoursAgo: 3,
+      destination: 'Mesa 7 (Sombra)',
+      items: [
+        { productId: 2, name: 'Camarones al Mojo', quantity: 2, price: 260, subtotal: 520 },
+        { productId: 11, name: 'Agua de Coco Frío', quantity: 2, price: 45, subtotal: 90 },
+        { productId: 6, name: 'Ceviche Costeño Mixto', quantity: 1, price: 180, subtotal: 180 },
+        { productId: 12, name: 'Cerveza Corona', quantity: 5, price: 40, subtotal: 200 },
+      ],
+      total: 990,
+      costTotal: 405,
+      paymentMethod: 'transferencia' as const,
+      amountPaid: 990,
+      change: 0,
+    },
+    {
+      hoursAgo: 2,
+      destination: 'Ramada 2 (Playa)',
+      items: [
+        { productId: 3, name: 'Langosta Fresca', quantity: 1, price: 480, subtotal: 480 },
+        { productId: 13, name: 'Michelada Preparada', quantity: 2, price: 85, subtotal: 170 },
+        { productId: 8, name: 'Tiritas de Pescado', quantity: 1, price: 160, subtotal: 160 },
+      ],
+      total: 810,
+      costTotal: 340,
+      paymentMethod: 'efectivo' as const,
+      amountPaid: 1000,
+      change: 190,
+    },
+    {
+      hoursAgo: 1,
+      destination: 'Para Llevar',
+      items: [
+        { productId: 1, name: 'Pescado a la Talla', quantity: 1, price: 320, subtotal: 320 },
+        { productId: 10, name: 'Chilate Costeño', quantity: 2, price: 50, subtotal: 100 },
+        { productId: 16, name: 'Cocada Tradicional', quantity: 4, price: 35, subtotal: 140 },
+      ],
+      total: 560,
+      costTotal: 220,
+      paymentMethod: 'efectivo' as const,
+      amountPaid: 600,
+      change: 40,
+    },
+  ];
+
+  todaySalesData.forEach((sData, idx) => {
+    const saleTime = new Date(today.getTime() - sData.hoursAgo * 3600000).toISOString();
+    sales.push({
+      date: saleTime,
+      dateString: todayStr,
+      items: sData.items,
+      total: sData.total,
+      costTotal: sData.costTotal,
+      paymentMethod: sData.paymentMethod,
+      amountPaid: sData.amountPaid,
+      change: sData.change,
+      destination: sData.destination,
+      status: 'completada',
+    });
+
+    transactions.push({
+      date: saleTime,
+      dateString: todayStr,
+      type: 'ingreso',
+      category: 'Venta POS',
+      amount: sData.total,
+      description: `Venta #${idx + 1} - ${sData.destination}`,
+      paymentMethod: sData.paymentMethod,
+    });
   });
 
-  // Venta 2 de hoy
-  sales.push({
-    date: new Date(today.getTime() - 1 * 3600000).toISOString(),
-    dateString: todayStr,
-    items: [
-      { productId: 2, name: 'Camarones al Mojo', quantity: 2, price: 260, subtotal: 520 },
-      { productId: 7, name: 'Agua de Coco Frío', quantity: 2, price: 45, subtotal: 90 },
-      { productId: 4, name: 'Ceviche Costeño Mixto', quantity: 1, price: 180, subtotal: 180 },
-      { productId: 8, name: 'Cerveza Corona', quantity: 5, price: 40, subtotal: 200 },
-    ],
-    total: 990,
-    costTotal: 405,
-    paymentMethod: 'transferencia',
-    amountPaid: 990,
-    change: 0,
-    destination: 'Mesa 7 (Sombra)',
-    status: 'completada',
-  });
-
-  // Gastos de hoy
+  // Hospedaje cobrado hoy (Cabaña 1)
   transactions.push({
-    date: new Date(today.getTime() - 4 * 3600000).toISOString(),
-    dateString: todayStr,
-    type: 'egreso',
-    category: 'Hielo y Bebidas',
-    amount: 140,
-    description: 'Compra de 5 bolsas de hielo a la camioneta repartidora',
-    paymentMethod: 'efectivo',
-  });
-
-  transactions.push({
-    date: new Date(today.getTime() - 2 * 3600000).toISOString(),
-    dateString: todayStr,
-    type: 'egreso',
-    category: 'Carbón y Leña',
-    amount: 180,
-    description: '2 costales de carbón de encino para la talla',
-    paymentMethod: 'efectivo',
-  });
-
-  transactions.push({
-    date: new Date(today.getTime() - 1 * 3600000).toISOString(),
-    dateString: todayStr,
-    type: 'egreso',
-    category: 'Abarrotes y Verduras',
-    amount: 100,
-    description: 'Limones criollos, cebolla morada y cilantro',
-    paymentMethod: 'efectivo',
-  });
-
-  // Transacciones de ingreso reflejadas de hoy
-  transactions.push({
-    date: new Date(today.getTime() - 3 * 3600000).toISOString(),
+    date: new Date(today.getTime() - 7 * 3600000).toISOString(),
     dateString: todayStr,
     type: 'ingreso',
-    category: 'Venta POS',
-    amount: 950,
-    description: 'Venta #1 - Ramada 4',
-    paymentMethod: 'efectivo',
+    category: 'Hospedaje',
+    amount: 1900,
+    description: 'Hospedaje Cabaña 1 (2 noches) - Familia Gómez Rivera',
+    paymentMethod: 'transferencia',
   });
 
-  transactions.push({
-    date: new Date(today.getTime() - 1 * 3600000).toISOString(),
-    dateString: todayStr,
-    type: 'ingreso',
-    category: 'Venta POS',
-    amount: 990,
-    description: 'Venta #2 - Mesa 7',
-    paymentMethod: 'transferencia',
+  // Gastos / Egresos de HOY (Múltiples para probar scroll completo)
+  const todayExpenses = [
+    {
+      hoursAgo: 7,
+      category: 'Pescado y Marisco Fresco' as const,
+      amount: 850,
+      description: 'Compra de 6 kg de huachinango vivo a pescador Don Manuel',
+      paymentMethod: 'efectivo' as const,
+    },
+    {
+      hoursAgo: 6,
+      category: 'Hielo y Bebidas' as const,
+      amount: 140,
+      description: 'Compra de 5 bolsas de hielo a la camioneta repartidora',
+      paymentMethod: 'efectivo' as const,
+    },
+    {
+      hoursAgo: 5,
+      category: 'Carbón y Leña' as const,
+      amount: 180,
+      description: '2 costales de carbón de encino para la talla',
+      paymentMethod: 'efectivo' as const,
+    },
+    {
+      hoursAgo: 4,
+      category: 'Abarrotes y Verduras' as const,
+      amount: 220,
+      description: 'Limones criollos, cebolla morada, aguacates y cilantro en mercado Copala',
+      paymentMethod: 'efectivo' as const,
+    },
+    {
+      hoursAgo: 3,
+      category: 'Gas' as const,
+      amount: 450,
+      description: 'Recarga de cilindro de gas 30 kg para cocina de ramada',
+      paymentMethod: 'efectivo' as const,
+    },
+    {
+      hoursAgo: 2,
+      category: 'Nómina / Propinas' as const,
+      amount: 300,
+      description: 'Adelanto de turno a ayudante de cocina',
+      paymentMethod: 'efectivo' as const,
+    },
+    {
+      hoursAgo: 1,
+      category: 'Mantenimiento e Higiene' as const,
+      amount: 130,
+      description: 'Cloro, jabón y bolsas de basura para cabañas y palapa',
+      paymentMethod: 'efectivo' as const,
+    },
+  ];
+
+  todayExpenses.forEach((exp) => {
+    transactions.push({
+      date: new Date(today.getTime() - exp.hoursAgo * 3600000).toISOString(),
+      dateString: todayStr,
+      type: 'egreso',
+      category: exp.category,
+      amount: exp.amount,
+      description: exp.description,
+      paymentMethod: exp.paymentMethod,
+    });
   });
 
   // Histórico de los últimos 28 días (4 semanas) para promedios por día de la semana
   for (let i = 1; i <= 28; i++) {
     const pastDate = new Date(today.getTime() - i * 24 * 3600000);
     const pastDateStr = pastDate.toISOString().split('T')[0];
-    const dayOfWeek = pastDate.getDay(); // 0 = Domingo, 1 = Lunes, 6 = Sábado
+    const dayOfWeek = pastDate.getDay();
 
-    // Los fines de semana (viernes, sábado, domingo) venden más en la playa
-    let baseAmount = 2500;
+    let baseAmount = 3200;
     if (dayOfWeek === 0) baseAmount = 10920; // Domingo fuerte
     else if (dayOfWeek === 6) baseAmount = 8800; // Sábado
     else if (dayOfWeek === 5) baseAmount = 5600; // Viernes
-    else if (dayOfWeek === 1) baseAmount = 4270; // Lunes (típico en la presentación: $4,271)
-    else baseAmount = 3100; // Martes a Jueves
+    else if (dayOfWeek === 1) baseAmount = 4270; // Lunes (típico en protocolo: $4,271)
+    else baseAmount = 3100;
 
-    // Pequeña variación
-    const finalAmount = Math.round(baseAmount * (0.9 + Math.random() * 0.2));
+    const finalAmount = Math.round(baseAmount * (0.92 + Math.random() * 0.16));
 
     sales.push({
       date: pastDate.toISOString(),
       dateString: pastDateStr,
       items: [
-        { productId: 1, name: 'Pescado a la Talla', quantity: Math.floor(finalAmount / 400), price: 320, subtotal: Math.floor(finalAmount / 400) * 320 },
+        { productId: 1, name: 'Pescado a la Talla', quantity: Math.floor(finalAmount / 380), price: 320, subtotal: Math.floor(finalAmount / 380) * 320 },
       ],
       total: finalAmount,
       costTotal: Math.round(finalAmount * 0.42),
@@ -375,8 +572,7 @@ export function generateSeedHistoricalData(): { sales: Sale[]; transactions: Tra
       paymentMethod: 'efectivo',
     });
 
-    // Gastos históricos
-    const expenseAmount = Math.round(finalAmount * 0.38);
+    const expenseAmount = Math.round(finalAmount * 0.36);
     transactions.push({
       date: pastDate.toISOString(),
       dateString: pastDateStr,
@@ -394,7 +590,7 @@ export function generateSeedHistoricalData(): { sales: Sale[]; transactions: Tra
 export async function initDatabaseWithSeedData(force = false) {
   const productCount = await db.products.count();
   if (productCount > 0 && !force) {
-    return; // Ya inicializado
+    return;
   }
 
   await db.transaction('rw', [db.products, db.rooms, db.sales, db.transactions, db.businessConfig], async () => {

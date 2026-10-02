@@ -70,7 +70,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onGoToTab, onOpenQ
   const occupiedRooms = rooms.filter(r => r.status === 'ocupada').length;
 
   return (
-    <div className="flex-1 overflow-y-auto pb-24 p-3 sm:p-5 max-w-4xl mx-auto space-y-4">
+    <div className="flex-1 overflow-y-auto pb-16 p-3 sm:p-5 max-w-4xl mx-auto space-y-4">
       {/* 1. Tarjeta Principal: HOY GANASTE (Slide 22) */}
       <div className="bg-gradient-to-br from-cyan-900 via-teal-800 to-cyan-950 rounded-2xl p-5 sm:p-6 text-white shadow-xl relative overflow-hidden border border-teal-600/40">
         <div className="absolute top-0 right-0 -mt-4 -mr-4 w-36 h-36 bg-amber-400/10 rounded-full blur-2xl pointer-events-none"></div>

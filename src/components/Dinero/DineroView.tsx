@@ -60,7 +60,7 @@ export const DineroView: React.FC<DineroViewProps> = ({ config }) => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto pb-24 p-3 sm:p-5 max-w-5xl mx-auto space-y-4">
+    <div className="flex-1 overflow-y-auto pb-16 p-3 sm:p-5 max-w-5xl mx-auto space-y-4">
       {/* Cabecera y Resumen Financiero del Día */}
       <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -238,6 +238,12 @@ export const DineroView: React.FC<DineroViewProps> = ({ config }) => {
             })
           )}
         </div>
+
+        {displayedTransactions.length > 0 && (
+          <div className="pt-3 pb-1 text-center text-xs text-slate-400 border-t border-slate-100 font-semibold">
+            ✓ Mostrando los {displayedTransactions.length} movimientos de {selectedDate}
+          </div>
+        )}
       </div>
 
       {/* Modal de Gasto Rápido */}

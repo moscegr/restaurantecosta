@@ -34,7 +34,7 @@ export const CuartosView: React.FC = () => {
   const filteredRooms = rooms.filter(r => filterStatus === 'todos' || r.status === filterStatus);
 
   return (
-    <div className="flex-1 overflow-y-auto pb-24 p-3 sm:p-5 max-w-5xl mx-auto space-y-4">
+    <div className="flex-1 overflow-y-auto pb-16 p-3 sm:p-5 max-w-5xl mx-auto space-y-4">
       {/* Cabecera del Tablero (Slide 22) */}
       <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">

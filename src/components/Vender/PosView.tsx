@@ -184,7 +184,7 @@ export const PosView: React.FC<PosViewProps> = ({ config }) => {
   };
 
   return (
-    <div className="flex-1 flex flex-col lg:flex-row h-[calc(100vh-60px)] pb-18 lg:pb-0 overflow-hidden bg-slate-100">
+    <div className="flex-1 flex flex-col lg:flex-row h-full overflow-hidden bg-slate-100">
       {/* SECCIÓN IZQUIERDA: CATÁLOGO TÁCTIL */}
       <div className="flex-1 flex flex-col h-full overflow-hidden border-r border-slate-200">
         {/* Barra superior de búsqueda y categorías */}
