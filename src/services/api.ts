@@ -70,6 +70,16 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ userId, pin }),
     }),
+  updateMyProfile: (payload: {
+    name?: string;
+    shift?: string;
+    currentPin?: string;
+    newPin?: string;
+  }) =>
+    request<{ token: string; user: StaffUser }>('/api/auth/me', {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    }),
 
   // Users (Admin)
   getUsers: () => request<StaffUser[]>('/api/users'),

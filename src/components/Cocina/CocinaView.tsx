@@ -75,7 +75,7 @@ export const CocinaView: React.FC<CocinaViewProps> = ({ config }) => {
                 Pantalla de Cocina y Estaciones (KDS)
               </h2>
               <p className="text-xs text-sky-200">
-                Sincronización en vivo con MongoDB · Semáforo automático de tiempo de preparación
+                Sincronización en vivo · Semáforo automático de tiempo de preparación
               </p>
             </div>
           </div>

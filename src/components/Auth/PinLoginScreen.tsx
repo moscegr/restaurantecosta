@@ -157,7 +157,7 @@ export const PinLoginScreen: React.FC<PinLoginScreenProps> = ({
             {loading ? (
               <div className="py-12 flex flex-col items-center justify-center text-slate-400 gap-2">
                 <Loader2 className="w-7 h-7 animate-spin text-[#087E8B]" />
-                <span className="text-xs font-medium">Conectando con base de datos MongoDB...</span>
+                <span className="text-xs font-medium">Cargando perfiles del sistema...</span>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[380px] overflow-y-auto pr-1">

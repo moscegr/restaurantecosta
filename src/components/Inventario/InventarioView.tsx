@@ -57,7 +57,7 @@ export const InventarioView: React.FC = () => {
           <div>
             <h2 className="text-xl font-extrabold text-slate-900">Catálogo e Inventario</h2>
             <p className="text-xs sm:text-sm text-slate-500">
-              Semáforo de existencias y descuento automático por cada venta en MongoDB.
+              Semáforo de existencias y descuento automático por cada venta.
             </p>
           </div>
 

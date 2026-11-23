@@ -14,9 +14,10 @@ import {
   Minus,
   ShoppingCart,
   Calendar,
+  Search,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import type { BusinessConfig, Product, Room } from '../../types';
+import type { BusinessConfig, Product, ProductCategory, Room } from '../../types';
 
 interface SitioPublicoModalProps {
   products: Product[];
@@ -27,6 +28,15 @@ interface SitioPublicoModalProps {
   onClose: () => void;
 }
 
+const CATEGORIES: ('Todos' | ProductCategory)[] = [
+  'Todos',
+  'Especialidades del Mar',
+  'Pescados y Mariscos',
+  'Bebidas y Chilate',
+  'Botanas y Antojitos',
+  'Postres y Cocos',
+];
+
 export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
   products,
   rooms,
@@ -36,11 +46,17 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
   onClose,
 }) => {
   const [activeTab, setActiveTab] = useState<'menu' | 'hospedaje' | 'qr'>('menu');
+  const [selectedCategory, setSelectedCategory] = useState<'Todos' | ProductCategory>('Todos');
+  const [searchQuery, setSearchQuery] = useState('');
   const [waCart, setWaCart] = useState<Record<string, number>>({});
   const [customerName, setCustomerName] = useState('');
   const [orderType, setOrderType] = useState<'En Ramada / Mesa' | 'Para Llevar'>('En Ramada / Mesa');
-  const [checkIn, setCheckIn] = useState(() => new Date(Date.now() + 86400000).toISOString().split('T')[0]);
-  const [checkOut, setCheckOut] = useState(() => new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0]);
+  const [checkIn, setCheckIn] = useState(() =>
+    new Date(Date.now() + 86400000).toISOString().split('T')[0]
+  );
+  const [checkOut, setCheckOut] = useState(() =>
+    new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0]
+  );
   const [guests, setGuests] = useState(2);
 
   if (!isOpen) return null;
@@ -62,11 +78,19 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
     });
   };
 
+  const availableProducts = products.filter((p) => {
+    if (!p.active || p.stock <= 0) return false;
+    const matchCat = selectedCategory === 'Todos' || p.category === selectedCategory;
+    const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchCat && matchSearch;
+  });
+
   const cartItems = products
     .filter((p) => waCart[p.id] > 0)
     .map((p) => ({ product: p, qty: waCart[p.id] }));
 
   const cartTotal = cartItems.reduce((s, i) => s + i.product.price * i.qty, 0);
+  const cartCount = cartItems.reduce((s, i) => s + i.qty, 0);
 
   const handleSendFullWhatsAppOrder = () => {
     if (cartItems.length === 0) return;
@@ -97,91 +121,99 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
     window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`, '_blank');
   };
 
+  const tabs = standalone
+    ? ([
+        { id: 'menu', label: 'Carta Digital', icon: Utensils },
+        { id: 'hospedaje', label: 'Cabañas y Cuartos', icon: BedDouble },
+      ] as const)
+    : ([
+        { id: 'menu', label: 'Carta Digital', icon: Utensils },
+        { id: 'hospedaje', label: 'Cabañas', icon: BedDouble },
+        { id: 'qr', label: 'Código QR', icon: QrCode },
+      ] as const);
+
   return (
     <div
       className={
         standalone
           ? 'min-h-screen w-screen bg-[#FAF8F5] flex flex-col overflow-y-auto'
-          : 'fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto'
+          : 'fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-0 sm:p-4 overflow-y-auto'
       }
     >
       <div
         className={
           standalone
             ? 'bg-[#FAF8F5] w-full max-w-5xl mx-auto flex flex-col flex-1 shadow-xl border-x border-slate-200'
-            : 'bg-[#FAF8F5] rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[94vh] border border-slate-200'
+            : 'bg-[#FAF8F5] sm:rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col h-full sm:h-auto sm:max-h-[94vh] border border-slate-200'
         }
       >
-        {/* Hero Costeño Profesional */}
-        <div className="relative bg-[#0B3954] text-white p-6">
+        {/* Hero Costeño Mobile-First */}
+        <div className="relative bg-[#0B3954] text-white p-4 sm:p-6">
           {standalone ? (
             <button
               type="button"
               onClick={onClose}
-              className="absolute top-4 right-4 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-sky-100 touch-press"
+              className="absolute top-3.5 right-3.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-[11px] font-bold text-sky-100 touch-press"
             >
-              Acceso Personal
+              Acceso Staff
             </button>
           ) : (
             <button
               type="button"
               onClick={onClose}
-              className="absolute top-4 right-4 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white touch-press"
+              className="absolute top-3.5 right-3.5 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white touch-press"
             >
               <X className="w-5 h-5" />
             </button>
           )}
 
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-amber-400 text-[#0B3954] flex items-center justify-center shadow-lg shrink-0">
-              <Compass className="w-8 h-8" />
+          <div className="flex items-center gap-3 pr-16">
+            <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-amber-400 text-[#0B3954] flex items-center justify-center shadow-lg shrink-0">
+              <Compass className="w-6 h-6 sm:w-8 sm:h-8" />
             </div>
-            <div>
-              <span className="text-[11px] font-bold tracking-wider uppercase text-amber-300">
-                Menú Digital y Reservas Directas
+            <div className="min-w-0">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-amber-300">
+                Menú Digital y Reservas
               </span>
-              <h2 className="font-display text-2xl sm:text-3xl font-bold text-white leading-tight mt-0.5">
+              <h2 className="font-display text-lg sm:text-2xl font-bold text-white leading-tight mt-0.5 truncate">
                 {businessName}
               </h2>
-              <p className="text-xs sm:text-sm text-sky-200 flex items-center gap-1.5 mt-1">
+              <p className="text-[11px] sm:text-sm text-sky-200 flex items-center gap-1 mt-0.5 truncate">
                 <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                <span>
-                  {config?.address}, {config?.municipio}, {config?.state}
+                <span className="truncate">
+                  {config?.address}, {config?.municipio}
                 </span>
               </p>
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-white/15 flex flex-wrap gap-3 text-xs text-sky-100">
+          <div className="mt-3 pt-2.5 border-t border-white/15 flex flex-wrap gap-2 text-[11px] text-sky-100">
             {config?.wifiName && (
-              <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-lg">
+              <span className="flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-lg">
                 <Wifi className="w-3.5 h-3.5 text-amber-400" />
-                Wi-Fi: {config.wifiName} (Clave: {config.wifiPassword})
+                Wi-Fi: {config.wifiName} ({config.wifiPassword})
               </span>
             )}
-            <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-lg">
+            <a
+              href={`tel:${phone.replace(/\s/g, '')}`}
+              className="flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-lg hover:bg-white/20"
+            >
               <Phone className="w-3.5 h-3.5 text-amber-400" />
-              Atención: {phone}
-            </span>
+              {phone}
+            </a>
           </div>
         </div>
 
         {/* Pestañas */}
-        <div className="flex border-b border-slate-200 bg-white">
-          {(
-            [
-              { id: 'menu', label: `Carta Digital (${products.length})`, icon: Utensils },
-              { id: 'hospedaje', label: `Cabañas y Cuartos (${rooms.length})`, icon: BedDouble },
-              { id: 'qr', label: 'Código QR para Mesas', icon: QrCode },
-            ] as const
-          ).map((tab) => {
+        <div className="flex border-b border-slate-200 bg-white sticky top-0 z-10">
+          {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 py-3.5 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 touch-press ${
+                className={`flex-1 py-3 text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 touch-press ${
                   activeTab === tab.id
                     ? 'text-[#0B3954] border-b-2 border-[#0B3954] bg-sky-50/40'
                     : 'text-slate-500 hover:text-slate-800'
@@ -195,74 +227,108 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
         </div>
 
         {/* Contenido */}
-        <div className="p-5 overflow-y-auto flex-1 space-y-5">
+        <div className="p-3.5 sm:p-5 overflow-y-auto flex-1 space-y-4 pb-28">
           {activeTab === 'menu' && (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {products
-                  .filter((p) => p.active && p.stock > 0)
-                  .map((p) => {
-                    const qty = waCart[p.id] || 0;
-                    return (
-                      <div
-                        key={p.id}
-                        className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-2xs flex flex-col justify-between"
-                      >
+              {/* Buscador + Categorías swipeables para smartphone */}
+              <div className="space-y-2.5">
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Buscar platillo, marisco o bebida..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#087E8B]"
+                  />
+                </div>
+
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+                  {CATEGORIES.map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap touch-press ${
+                        selectedCategory === cat
+                          ? 'bg-[#0B3954] text-white shadow-xs'
+                          : 'bg-white border border-slate-200 text-slate-600'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tarjetas horizontales compactas en móvil, grid fotográfico en tablet/PC */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {availableProducts.map((p) => {
+                  const qty = waCart[p.id] || 0;
+                  return (
+                    <div
+                      key={p.id}
+                      className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-2xs flex flex-row sm:flex-col justify-between"
+                    >
+                      <div className="w-28 sm:w-full h-auto sm:h-32 bg-slate-100 relative shrink-0">
+                        {p.imageUrl ? (
+                          <img
+                            src={p.imageUrl}
+                            alt={p.name}
+                            loading="lazy"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-slate-300">
+                            <Utensils className="w-7 h-7" />
+                          </div>
+                        )}
+                        <span className="hidden sm:inline-block absolute bottom-2 right-2 px-2.5 py-1 rounded-lg bg-[#0B3954]/90 text-white text-xs font-extrabold">
+                          ${p.price} MXN
+                        </span>
+                      </div>
+
+                      <div className="p-3 flex-1 flex flex-col justify-between min-w-0">
                         <div>
-                          <div className="h-32 w-full bg-slate-100 relative">
-                            {p.imageUrl ? (
-                              <img
-                                src={p.imageUrl}
-                                alt={p.name}
-                                loading="lazy"
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-slate-300">
-                                <Utensils className="w-8 h-8" />
-                              </div>
-                            )}
-                            <span className="absolute bottom-2 right-2 px-2.5 py-1 rounded-lg bg-[#0B3954]/90 text-white text-xs font-extrabold">
-                              ${p.price} MXN
+                          <div className="flex items-start justify-between gap-2">
+                            <h4 className="font-extrabold text-xs sm:text-sm text-slate-900 leading-snug line-clamp-2">
+                              {p.name}
+                            </h4>
+                            <span className="sm:hidden font-extrabold text-sm text-[#0B3954] shrink-0">
+                              ${p.price}
                             </span>
                           </div>
-                          <div className="p-3.5">
-                            <span className="text-[10px] font-bold uppercase text-[#087E8B]">
-                              {p.category}
-                            </span>
-                            <h4 className="font-extrabold text-sm text-slate-900 mt-0.5">{p.name}</h4>
-                            {p.description && (
-                              <p className="text-xs text-slate-500 mt-1 line-clamp-2">{p.description}</p>
-                            )}
-                          </div>
+                          {p.description && (
+                            <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">
+                              {p.description}
+                            </p>
+                          )}
                         </div>
 
-                        <div className="px-3.5 pb-3.5">
+                        <div className="mt-2.5">
                           {qty === 0 ? (
                             <button
                               type="button"
                               onClick={() => updateCart(p.id, 1)}
-                              className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-[#0B3954] hover:text-white text-slate-800 text-xs font-bold flex items-center justify-center gap-1.5 touch-press"
+                              className="w-full py-2 rounded-xl bg-slate-100 hover:bg-[#0B3954] hover:text-white text-slate-800 text-xs font-bold flex items-center justify-center gap-1 touch-press"
                             >
                               <Plus className="w-3.5 h-3.5" />
-                              <span>Agregar al pedido</span>
+                              <span>Agregar</span>
                             </button>
                           ) : (
                             <div className="flex items-center justify-between bg-sky-50 border border-sky-200 rounded-xl p-1">
                               <button
                                 type="button"
                                 onClick={() => updateCart(p.id, -1)}
-                                className="w-8 h-8 rounded-lg bg-white text-slate-800 flex items-center justify-center shadow-2xs"
+                                className="w-8 h-8 rounded-lg bg-white text-slate-800 flex items-center justify-center shadow-2xs touch-press"
                               >
                                 <Minus className="w-3.5 h-3.5" />
                               </button>
-                              <span className="text-xs font-extrabold text-[#0B3954]">
-                                {qty} en pedido
-                              </span>
+                              <span className="text-xs font-extrabold text-[#0B3954]">{qty}</span>
                               <button
                                 type="button"
                                 onClick={() => updateCart(p.id, 1)}
-                                className="w-8 h-8 rounded-lg bg-[#0B3954] text-white flex items-center justify-center shadow-2xs"
+                                className="w-8 h-8 rounded-lg bg-[#0B3954] text-white flex items-center justify-center shadow-2xs touch-press"
                               >
                                 <Plus className="w-3.5 h-3.5" />
                               </button>
@@ -270,53 +336,16 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
                           )}
                         </div>
                       </div>
-                    );
-                  })}
+                    </div>
+                  );
+                })}
               </div>
-
-              {/* Barra flotante de carrito WhatsApp */}
-              {cartItems.length > 0 && (
-                <div className="sticky bottom-0 bg-[#0B3954] text-white p-4 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3">
-                  <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
-                    <ShoppingCart className="w-5 h-5 text-amber-400 shrink-0" />
-                    <input
-                      type="text"
-                      placeholder="Tu nombre"
-                      value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
-                      className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-xs text-white placeholder:text-sky-200 w-36"
-                    />
-                    <select
-                      value={orderType}
-                      onChange={(e) => setOrderType(e.target.value as any)}
-                      className="px-2.5 py-1.5 rounded-lg bg-white/10 border border-white/20 text-xs text-white"
-                    >
-                      <option className="text-slate-900" value="En Ramada / Mesa">
-                        En Ramada / Mesa
-                      </option>
-                      <option className="text-slate-900" value="Para Llevar">
-                        Para Llevar
-                      </option>
-                    </select>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={handleSendFullWhatsAppOrder}
-                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs flex items-center justify-center gap-2 touch-press"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    <span>Enviar Pedido por WhatsApp · ${cartTotal.toLocaleString('es-MX')}</span>
-                  </button>
-                </div>
-              )}
             </>
           )}
 
           {activeTab === 'hospedaje' && (
             <div className="space-y-4">
-              {/* Buscador de fechas para reserva por WhatsApp */}
-              <div className="bg-white p-4 rounded-2xl border border-slate-200 grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+              <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
                 <div>
                   <label className="font-bold text-slate-600 flex items-center gap-1 mb-1">
                     <Calendar className="w-3.5 h-3.5 text-[#087E8B]" /> Llegada
@@ -325,7 +354,7 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
                     type="date"
                     value={checkIn}
                     onChange={(e) => setCheckIn(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 font-bold"
+                    className="w-full px-2.5 py-2 rounded-xl bg-slate-50 border border-slate-200 font-bold"
                   />
                 </div>
                 <div>
@@ -336,7 +365,7 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
                     type="date"
                     value={checkOut}
                     onChange={(e) => setCheckOut(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 font-bold"
+                    className="w-full px-2.5 py-2 rounded-xl bg-slate-50 border border-slate-200 font-bold"
                   />
                 </div>
                 <div>
@@ -347,17 +376,17 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
                     max="10"
                     value={guests}
                     onChange={(e) => setGuests(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 font-bold"
+                    className="w-full px-2.5 py-2 rounded-xl bg-slate-50 border border-slate-200 font-bold"
                   />
                 </div>
                 <div>
                   <label className="font-bold text-slate-600 block mb-1">Tu Nombre</label>
                   <input
                     type="text"
-                    placeholder="Nombre del titular"
+                    placeholder="Titular"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 font-semibold"
+                    className="w-full px-2.5 py-2 rounded-xl bg-slate-50 border border-slate-200 font-semibold"
                   />
                 </div>
               </div>
@@ -383,7 +412,9 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
                       </div>
                       <div className="p-4">
                         <div className="flex items-baseline justify-between gap-2">
-                          <h4 className="font-extrabold text-base text-slate-900">{r.name}</h4>
+                          <h4 className="font-extrabold text-sm sm:text-base text-slate-900">
+                            {r.name}
+                          </h4>
                           <span className="font-extrabold text-sm text-[#087E8B] shrink-0">
                             ${r.pricePerNight} / noche
                           </span>
@@ -392,7 +423,7 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
                           Capacidad hasta {r.capacity} personas.
                         </p>
                         {r.amenities && r.amenities.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 mt-2.5">
+                          <div className="flex flex-wrap gap-1.5 mt-2">
                             {r.amenities.map((am) => (
                               <span
                                 key={am}
@@ -422,14 +453,14 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
             </div>
           )}
 
-          {activeTab === 'qr' && (
-            <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-xs text-center space-y-4 max-w-md mx-auto">
+          {activeTab === 'qr' && !standalone && (
+            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs text-center space-y-4 max-w-md mx-auto">
               <h4 className="font-display text-xl font-bold text-slate-900">
                 Código QR para Mesas y Ramadas
               </h4>
               <p className="text-xs text-slate-500">
-                Imprime este código y colócalo en los acrílicos de cada palapa para que tus clientes
-                exploren la carta y soliciten pedidos por WhatsApp sin comisiones.
+                Al escanear este código desde un celular, el comensal entra directo a la carta
+                digital y pedidos por WhatsApp sin pantalla de acceso.
               </p>
 
               <div className="p-5 bg-white rounded-2xl border-4 border-[#0B3954] inline-block mx-auto">
@@ -459,6 +490,44 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
             </div>
           )}
         </div>
+
+        {/* Barra inferior fija de Carrito WhatsApp optimizada para Smartphones */}
+        {activeTab === 'menu' && cartItems.length > 0 && (
+          <div className="bg-[#0B3954] text-white p-3.5 sm:px-5 border-t border-white/10 shadow-2xl space-y-2.5 shrink-0">
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                placeholder="Tu nombre"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                className="px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-xs text-white placeholder:text-sky-200"
+              />
+              <select
+                value={orderType}
+                onChange={(e) => setOrderType(e.target.value as any)}
+                className="px-2.5 py-2 rounded-xl bg-white/10 border border-white/20 text-xs text-white"
+              >
+                <option className="text-slate-900" value="En Ramada / Mesa">
+                  En Ramada / Mesa
+                </option>
+                <option className="text-slate-900" value="Para Llevar">
+                  Para Llevar
+                </option>
+              </select>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSendFullWhatsAppOrder}
+              className="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 touch-press shadow-md"
+            >
+              <ShoppingCart className="w-4 h-4" />
+              <span>
+                Pedir por WhatsApp ({cartCount}) · ${cartTotal.toLocaleString('es-MX')} MXN
+              </span>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

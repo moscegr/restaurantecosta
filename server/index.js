@@ -78,6 +78,37 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+app.put('/api/auth/me', requireAuth, async (req, res) => {
+  try {
+    const { name, shift, currentPin, newPin } = req.body;
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado.' });
+
+    if (name && name.trim()) user.name = name.trim();
+    if (shift !== undefined) user.shift = shift.trim();
+
+    if (newPin) {
+      if (!/^\d{4}$/.test(String(newPin))) {
+        return res.status(400).json({ error: 'El nuevo PIN debe tener exactamente 4 dígitos.' });
+      }
+      if (!currentPin) {
+        return res.status(400).json({ error: 'Ingresa tu PIN actual para confirmar el cambio.' });
+      }
+      const valid = await bcrypt.compare(String(currentPin), user.pinHash);
+      if (!valid) {
+        return res.status(401).json({ error: 'El PIN actual es incorrecto.' });
+      }
+      user.pinHash = await bcrypt.hash(String(newPin), 10);
+    }
+
+    await user.save();
+    const token = signToken(user);
+    res.json({ token, user: user.toJSON() });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Error actualizando perfil.' });
+  }
+});
+
 app.get('/api/users', requireAuth, requireRole('admin'), async (_req, res) => {
   try {
     const users = await User.find().sort({ createdAt: -1 });

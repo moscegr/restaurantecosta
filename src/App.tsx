@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { Sidebar, getAllowedTabsForRole, type ActiveTab } from './components/Sidebar';
 import { PinLoginScreen } from './components/Auth/PinLoginScreen';
+import { ProfileModal } from './components/Auth/ProfileModal';
 import { DashboardView } from './components/Hoy/DashboardView';
 import { PosView } from './components/Vender/PosView';
 import { MeseroView } from './components/Mesero/MeseroView';
@@ -42,8 +43,10 @@ export function App() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [pendingKitchenCount, setPendingKitchenCount] = useState<number>(0);
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isPublicMenuOpen, setIsPublicMenuOpen] = useState(false);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isQuickExpenseOpen, setIsQuickExpenseOpen] = useState(false);
 
   const loadPublicCatalog = async () => {
@@ -91,7 +94,7 @@ export function App() {
     setUser(null);
   };
 
-  // Si se escaneó el QR (/?menu=publico o /menu), abrir directo el Menú Público sin pedir PIN
+  // QR directo al Menú Público en smartphones sin pedir PIN
   if (isPublicRoute) {
     return (
       <SitioPublicoModal
@@ -108,7 +111,6 @@ export function App() {
     );
   }
 
-  // Si no hay sesión activa, mostrar pantalla de acceso rápido con PIN táctil
   if (!user) {
     return (
       <>
@@ -137,7 +139,7 @@ export function App() {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[#F4F6F9] antialiased text-slate-900 select-none">
-      {/* Menú Lateral con control estricto de roles */}
+      {/* Sidebar responsivo: fijo en Tablet/Desktop, Drawer en Smartphone */}
       <Sidebar
         activeTab={activeTab}
         onChangeTab={(tab) => {
@@ -150,9 +152,12 @@ export function App() {
         occupiedRoomsCount={occupiedRoomsCount}
         lowStockCount={lowStockCount}
         pendingKitchenOrdersCount={pendingKitchenCount}
+        isMobileOpen={isMobileMenuOpen}
+        onCloseMobile={() => setIsMobileMenuOpen(false)}
         onOpenPublicMenu={() => setIsPublicMenuOpen(true)}
         onOpenSettings={() => setIsConfigOpen(true)}
         onOpenQuickExpense={() => setIsQuickExpenseOpen(true)}
+        onOpenProfile={() => setIsProfileOpen(true)}
         onLogout={handleLogout}
       />
 
@@ -164,6 +169,8 @@ export function App() {
           activeTabTitle={TAB_TITLES[activeTab]}
           onOpenPublicMenu={() => setIsPublicMenuOpen(true)}
           onOpenSettings={() => setIsConfigOpen(true)}
+          onOpenProfile={() => setIsProfileOpen(true)}
+          onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
         />
 
         <main className="flex-1 flex flex-col overflow-hidden relative">
@@ -208,6 +215,15 @@ export function App() {
         isOpen={isConfigOpen}
         onClose={() => setIsConfigOpen(false)}
         onSave={loadPublicCatalog}
+      />
+
+      <ProfileModal
+        user={user}
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        onProfileUpdated={(updated) => setUser(updated)}
+        onOpenBusinessSettings={() => setIsConfigOpen(true)}
+        onLogout={handleLogout}
       />
 
       <QuickExpenseModal

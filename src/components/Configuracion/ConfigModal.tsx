@@ -77,7 +77,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
         wifiPassword: wifiPassword.trim(),
         currency: 'MXN',
       });
-      setSavedMsg('Configuración guardada en MongoDB.');
+      setSavedMsg('Configuración guardada correctamente.');
       onSave();
       setTimeout(() => {
         onClose();
@@ -283,7 +283,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
             className="w-full py-2.5 px-3 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-xl text-amber-950 font-bold text-xs flex items-center justify-center gap-1.5 touch-press"
           >
             <RefreshCw className={`w-4 h-4 ${isResetting ? 'animate-spin' : ''}`} />
-            <span>Restablecer Datos Demo en MongoDB</span>
+            <span>Restablecer Datos de Demostración</span>
           </button>
 
           <div className="pt-2 flex gap-2">

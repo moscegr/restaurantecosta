@@ -63,7 +63,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({
           <div className="w-12 h-12 bg-white text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-2 shadow-md">
             <Check className="w-7 h-7 stroke-[3]" />
           </div>
-          <h3 className="text-lg font-extrabold">Venta Registrada en MongoDB</h3>
+          <h3 className="text-lg font-extrabold">Venta Registrada con Éxito</h3>
           <p className="text-xs text-emerald-100 mt-0.5">
             Inventario descontado e ingreso reflejado en Finanzas.
           </p>
