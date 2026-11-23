@@ -1,10 +1,22 @@
 import React, { useState } from 'react';
-import { 
-  X, MessageCircle, QrCode, Utensils, BedDouble, 
-  MapPin, Phone, Wifi, Compass, Printer 
+import {
+  X,
+  MessageCircle,
+  QrCode,
+  Utensils,
+  BedDouble,
+  MapPin,
+  Phone,
+  Wifi,
+  Compass,
+  Printer,
+  Plus,
+  Minus,
+  ShoppingCart,
+  Calendar,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import type { Product, Room, BusinessConfig } from '../../types';
+import type { BusinessConfig, Product, Room } from '../../types';
 
 interface SitioPublicoModalProps {
   products: Product[];
@@ -21,250 +33,404 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  if (!isOpen) return null;
-
   const [activeTab, setActiveTab] = useState<'menu' | 'hospedaje' | 'qr'>('menu');
+  const [waCart, setWaCart] = useState<Record<string, number>>({});
+  const [customerName, setCustomerName] = useState('');
+  const [orderType, setOrderType] = useState<'En Ramada / Mesa' | 'Para Llevar'>('En Ramada / Mesa');
+  const [checkIn, setCheckIn] = useState(() => new Date(Date.now() + 86400000).toISOString().split('T')[0]);
+  const [checkOut, setCheckOut] = useState(() => new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0]);
+  const [guests, setGuests] = useState(2);
+
+  if (!isOpen) return null;
 
   const businessName = config?.businessName || 'Ramada & Cabañas Las Brisas';
   const phone = config?.phone || '741 123 4567';
   const whatsappNumber = config?.whatsapp?.replace(/\D/g, '') || '527411234567';
   const shareUrl = window.location.href;
 
-  const handleOrderWhatsApp = (dishName: string, price: number) => {
-    const text = encodeURIComponent(
-      `¡Hola! Estoy en ${businessName} y me gustaría ordenar:\n• 1x *${dishName}* ($${price} MXN)\n¿Me lo podrían preparar por favor? 🌴`
-    );
-    window.open(`https://wa.me/${whatsappNumber}?text=${text}`, '_blank');
+  const updateCart = (productId: string, delta: number) => {
+    setWaCart((prev) => {
+      const next = (prev[productId] || 0) + delta;
+      if (next <= 0) {
+        const copy = { ...prev };
+        delete copy[productId];
+        return copy;
+      }
+      return { ...prev, [productId]: next };
+    });
   };
 
-  const handleReserveWhatsApp = (roomName: string, price: number) => {
-    const text = encodeURIComponent(
-      `¡Hola ${businessName}! Me interesa reservar la cabaña *${roomName}* ($${price} MXN/noche). ¿Tienen disponibilidad para este fin de semana? 🌊`
-    );
-    window.open(`https://wa.me/${whatsappNumber}?text=${text}`, '_blank');
+  const cartItems = products
+    .filter((p) => waCart[p.id] > 0)
+    .map((p) => ({ product: p, qty: waCart[p.id] }));
+
+  const cartTotal = cartItems.reduce((s, i) => s + i.product.price * i.qty, 0);
+
+  const handleSendFullWhatsAppOrder = () => {
+    if (cartItems.length === 0) return;
+    let text = `Hola *${businessName}*, me gustaría realizar el siguiente pedido:\n\n`;
+    text += `Cliente: ${customerName || 'Visitante'}\n`;
+    text += `Modalidad: ${orderType}\n`;
+    text += `-------------------------\n`;
+    cartItems.forEach((item) => {
+      text += `- ${item.qty}x ${item.product.name} ($${item.product.price * item.qty})\n`;
+    });
+    text += `-------------------------\n`;
+    text += `*Total estimado: $${cartTotal.toLocaleString('es-MX')} MXN*\n\n`;
+    text += `Quedo atento a su confirmación.`;
+
+    window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const handleReserveRoomWhatsApp = (room: Room) => {
+    let text = `Hola *${businessName}*, deseo consultar disponibilidad y reservar hospedaje:\n\n`;
+    text += `Unidad: *${room.name}* (${room.type})\n`;
+    text += `Tarifa: $${room.pricePerNight} MXN / noche\n`;
+    text += `Llegada: ${checkIn}\n`;
+    text += `Salida: ${checkOut}\n`;
+    text += `Huéspedes: ${guests} persona(s)\n`;
+    text += `Titular: ${customerName || 'Interesado'}\n\n`;
+    text += `Por favor indíquenme cómo confirmar el anticipo.`;
+
+    window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto animate-in fade-in duration-150">
-      <div className="bg-slate-50 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] border border-cyan-500/20">
-        {/* Banner Hero Costeño */}
-        <div className="relative bg-gradient-to-r from-cyan-900 via-teal-800 to-amber-700 text-white p-5 sm:p-6 select-none">
-          <div className="absolute top-2 right-2">
-            <button
-              onClick={onClose}
-              className="p-2 rounded-xl bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm active:scale-95 transition-all"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+      <div className="bg-[#FAF8F5] rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[94vh] border border-slate-200">
+        {/* Hero Costeño Profesional */}
+        <div className="relative bg-[#0B3954] text-white p-6">
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white touch-press"
+          >
+            <X className="w-5 h-5" />
+          </button>
 
-          <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-amber-400 text-cyan-950 flex items-center justify-center font-black shadow-xl border-2 border-white/40">
-              <Compass className="w-8 h-8 text-cyan-950" />
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-amber-400 text-[#0B3954] flex items-center justify-center shadow-lg shrink-0">
+              <Compass className="w-8 h-8" />
             </div>
             <div>
-              <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-amber-300 bg-black/20 px-2 py-0.5 rounded-full">
-                Vista Pública del Comensal
+              <span className="text-[11px] font-bold tracking-wider uppercase text-amber-300">
+                Menú Digital y Reservas Directas
               </span>
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white mt-0.5">
+              <h2 className="font-display text-2xl sm:text-3xl font-bold text-white leading-tight mt-0.5">
                 {businessName}
               </h2>
-              <p className="text-xs sm:text-sm text-teal-100 flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                <span>{config?.address}, {config?.municipio}, Gro.</span>
+              <p className="text-xs sm:text-sm text-sky-200 flex items-center gap-1.5 mt-1">
+                <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span>
+                  {config?.address}, {config?.municipio}, {config?.state}
+                </span>
               </p>
             </div>
           </div>
 
-          {/* Datos Rápidos: WiFi y Teléfono */}
-          <div className="mt-4 pt-3 border-t border-white/20 flex flex-wrap items-center gap-3 text-xs text-teal-100">
+          <div className="mt-4 pt-3 border-t border-white/15 flex flex-wrap gap-3 text-xs text-sky-100">
             {config?.wifiName && (
-              <span className="flex items-center gap-1 bg-white/10 px-2.5 py-1 rounded-lg">
-                <Wifi className="w-3.5 h-3.5 text-amber-300" /> WiFi: {config.wifiName} ({config.wifiPassword})
+              <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-lg">
+                <Wifi className="w-3.5 h-3.5 text-amber-400" />
+                Wi-Fi: {config.wifiName} (Clave: {config.wifiPassword})
               </span>
             )}
-            <span className="flex items-center gap-1 bg-white/10 px-2.5 py-1 rounded-lg">
-              <Phone className="w-3.5 h-3.5 text-amber-300" /> Tel: {phone}
+            <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-lg">
+              <Phone className="w-3.5 h-3.5 text-amber-400" />
+              Atención: {phone}
             </span>
           </div>
         </div>
 
-        {/* Pestañas de Vista */}
+        {/* Pestañas */}
         <div className="flex border-b border-slate-200 bg-white">
-          <button
-            onClick={() => setActiveTab('menu')}
-            className={`flex-1 py-3 text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all ${
-              activeTab === 'menu'
-                ? 'text-cyan-900 border-b-2 border-cyan-800 bg-cyan-50/50'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <Utensils className="w-4 h-4" />
-            <span>Menú Digital ({products.length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('hospedaje')}
-            className={`flex-1 py-3 text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all ${
-              activeTab === 'hospedaje'
-                ? 'text-cyan-900 border-b-2 border-cyan-800 bg-cyan-50/50'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <BedDouble className="w-4 h-4" />
-            <span>Cabañas & Cuartos ({rooms.length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('qr')}
-            className={`flex-1 py-3 text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all ${
-              activeTab === 'qr'
-                ? 'text-cyan-900 border-b-2 border-cyan-800 bg-cyan-50/50'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <QrCode className="w-4 h-4" />
-            <span>Código QR de Mesas</span>
-          </button>
+          {(
+            [
+              { id: 'menu', label: `Carta Digital (${products.length})`, icon: Utensils },
+              { id: 'hospedaje', label: `Cabañas y Cuartos (${rooms.length})`, icon: BedDouble },
+              { id: 'qr', label: 'Código QR para Mesas', icon: QrCode },
+            ] as const
+          ).map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 py-3.5 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 touch-press ${
+                  activeTab === tab.id
+                    ? 'text-[#0B3954] border-b-2 border-[#0B3954] bg-sky-50/40'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Contenido Dinámico */}
-        <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-4">
-          {/* 1. MENÚ DIGITAL */}
+        {/* Contenido */}
+        <div className="p-5 overflow-y-auto flex-1 space-y-5">
           {activeTab === 'menu' && (
-            <div className="space-y-3">
-              <div className="bg-amber-50 p-3 rounded-2xl border border-amber-200 text-xs text-amber-900 flex items-center justify-between">
-                <span>🌴 Pide directamente a tu mesero o pulsa el botón para pedir por WhatsApp.</span>
-              </div>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {products
+                  .filter((p) => p.active && p.stock > 0)
+                  .map((p) => {
+                    const qty = waCart[p.id] || 0;
+                    return (
+                      <div
+                        key={p.id}
+                        className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-2xs flex flex-col justify-between"
+                      >
+                        <div>
+                          <div className="h-32 w-full bg-slate-100 relative">
+                            {p.imageUrl ? (
+                              <img
+                                src={p.imageUrl}
+                                alt={p.name}
+                                loading="lazy"
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                <Utensils className="w-8 h-8" />
+                              </div>
+                            )}
+                            <span className="absolute bottom-2 right-2 px-2.5 py-1 rounded-lg bg-[#0B3954]/90 text-white text-xs font-extrabold">
+                              ${p.price} MXN
+                            </span>
+                          </div>
+                          <div className="p-3.5">
+                            <span className="text-[10px] font-bold uppercase text-[#087E8B]">
+                              {p.category}
+                            </span>
+                            <h4 className="font-extrabold text-sm text-slate-900 mt-0.5">{p.name}</h4>
+                            {p.description && (
+                              <p className="text-xs text-slate-500 mt-1 line-clamp-2">{p.description}</p>
+                            )}
+                          </div>
+                        </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {products.filter(p => p.active).map((p) => (
-                  <div
-                    key={p.id}
-                    className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="text-3xl">{p.icon}</span>
-                        <span className="text-base font-black text-cyan-900">
-                          ${p.price} MXN
-                        </span>
+                        <div className="px-3.5 pb-3.5">
+                          {qty === 0 ? (
+                            <button
+                              type="button"
+                              onClick={() => updateCart(p.id, 1)}
+                              className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-[#0B3954] hover:text-white text-slate-800 text-xs font-bold flex items-center justify-center gap-1.5 touch-press"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>Agregar al pedido</span>
+                            </button>
+                          ) : (
+                            <div className="flex items-center justify-between bg-sky-50 border border-sky-200 rounded-xl p-1">
+                              <button
+                                type="button"
+                                onClick={() => updateCart(p.id, -1)}
+                                className="w-8 h-8 rounded-lg bg-white text-slate-800 flex items-center justify-center shadow-2xs"
+                              >
+                                <Minus className="w-3.5 h-3.5" />
+                              </button>
+                              <span className="text-xs font-extrabold text-[#0B3954]">
+                                {qty} en pedido
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => updateCart(p.id, 1)}
+                                className="w-8 h-8 rounded-lg bg-[#0B3954] text-white flex items-center justify-center shadow-2xs"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <h4 className="font-extrabold text-sm text-slate-900 mt-2">
-                        {p.name}
-                      </h4>
-                      {p.description && (
-                        <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                          {p.description}
-                        </p>
-                      )}
-                    </div>
-
-                    <button
-                      onClick={() => handleOrderWhatsApp(p.name, p.price)}
-                      className="mt-3 w-full py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs rounded-xl border border-emerald-200 flex items-center justify-center gap-1.5 touch-press"
-                    >
-                      <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>Pedir por WhatsApp</span>
-                    </button>
-                  </div>
-                ))}
+                    );
+                  })}
               </div>
-            </div>
+
+              {/* Barra flotante de carrito WhatsApp */}
+              {cartItems.length > 0 && (
+                <div className="sticky bottom-0 bg-[#0B3954] text-white p-4 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+                    <ShoppingCart className="w-5 h-5 text-amber-400 shrink-0" />
+                    <input
+                      type="text"
+                      placeholder="Tu nombre"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-xs text-white placeholder:text-sky-200 w-36"
+                    />
+                    <select
+                      value={orderType}
+                      onChange={(e) => setOrderType(e.target.value as any)}
+                      className="px-2.5 py-1.5 rounded-lg bg-white/10 border border-white/20 text-xs text-white"
+                    >
+                      <option className="text-slate-900" value="En Ramada / Mesa">
+                        En Ramada / Mesa
+                      </option>
+                      <option className="text-slate-900" value="Para Llevar">
+                        Para Llevar
+                      </option>
+                    </select>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleSendFullWhatsAppOrder}
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs flex items-center justify-center gap-2 touch-press"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    <span>Enviar Pedido por WhatsApp · ${cartTotal.toLocaleString('es-MX')}</span>
+                  </button>
+                </div>
+              )}
+            </>
           )}
 
-          {/* 2. CABAÑAS & HOSPEDAJE */}
           {activeTab === 'hospedaje' && (
-            <div className="space-y-3">
-              <div className="bg-cyan-50 p-3 rounded-2xl border border-cyan-200 text-xs text-cyan-900">
-                🌊 Cabañas frente a las playas de Copala y Marquelia con hamacas, brisa marina y tranquilidad garantizada.
+            <div className="space-y-4">
+              {/* Buscador de fechas para reserva por WhatsApp */}
+              <div className="bg-white p-4 rounded-2xl border border-slate-200 grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+                <div>
+                  <label className="font-bold text-slate-600 flex items-center gap-1 mb-1">
+                    <Calendar className="w-3.5 h-3.5 text-[#087E8B]" /> Llegada
+                  </label>
+                  <input
+                    type="date"
+                    value={checkIn}
+                    onChange={(e) => setCheckIn(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-600 flex items-center gap-1 mb-1">
+                    <Calendar className="w-3.5 h-3.5 text-[#087E8B]" /> Salida
+                  </label>
+                  <input
+                    type="date"
+                    value={checkOut}
+                    onChange={(e) => setCheckOut(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-600 block mb-1">Huéspedes</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={guests}
+                    onChange={(e) => setGuests(Number(e.target.value))}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-600 block mb-1">Tu Nombre</label>
+                  <input
+                    type="text"
+                    placeholder="Nombre del titular"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 font-semibold"
+                  />
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {rooms.map((r) => (
                   <div
                     key={r.id}
-                    className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between"
+                    className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-2xs flex flex-col justify-between"
                   >
                     <div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-black uppercase text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                      <div className="h-36 w-full bg-slate-100 relative">
+                        {r.imageUrl ? (
+                          <img src={r.imageUrl} alt={r.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-slate-300">
+                            <BedDouble className="w-10 h-10" />
+                          </div>
+                        )}
+                        <span className="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-white/95 text-[#0B3954] text-[10px] font-extrabold uppercase">
                           {r.type}
                         </span>
-                        <span className="text-base font-black text-cyan-900">
-                          ${r.pricePerNight} / noche
-                        </span>
                       </div>
-                      <h4 className="font-black text-base text-slate-900 mt-2">
-                        {r.name}
-                      </h4>
-                      <p className="text-xs text-slate-500 mt-1">
-                        Capacidad para hasta {r.capacity} personas. Baño completo, ventilador o aire, frente a la playa.
-                      </p>
+                      <div className="p-4">
+                        <div className="flex items-baseline justify-between gap-2">
+                          <h4 className="font-extrabold text-base text-slate-900">{r.name}</h4>
+                          <span className="font-extrabold text-sm text-[#087E8B] shrink-0">
+                            ${r.pricePerNight} / noche
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-1">
+                          Capacidad hasta {r.capacity} personas.
+                        </p>
+                        {r.amenities && r.amenities.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mt-2.5">
+                            {r.amenities.map((am) => (
+                              <span
+                                key={am}
+                                className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-semibold"
+                              >
+                                {am}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
-                    <button
-                      onClick={() => handleReserveWhatsApp(r.name, r.pricePerNight)}
-                      className="mt-4 w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl flex items-center justify-center gap-1.5 shadow touch-press"
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                      <span>Reservar Cabaña por WhatsApp</span>
-                    </button>
+                    <div className="px-4 pb-4">
+                      <button
+                        type="button"
+                        onClick={() => handleReserveRoomWhatsApp(r)}
+                        className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl flex items-center justify-center gap-2 touch-press"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        <span>Reservar por WhatsApp</span>
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* 3. CÓDIGO QR */}
           {activeTab === 'qr' && (
-            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm text-center space-y-4 max-w-sm mx-auto">
-              <div>
-                <h4 className="font-black text-lg text-slate-900">
-                  Código QR para tus Mesas y Ramadas
-                </h4>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Imprímelo y colócalo en acrílicos o en las palapas para que tus clientes escaneen el menú.
-                </p>
-              </div>
+            <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-xs text-center space-y-4 max-w-md mx-auto">
+              <h4 className="font-display text-xl font-bold text-slate-900">
+                Código QR para Mesas y Ramadas
+              </h4>
+              <p className="text-xs text-slate-500">
+                Imprime este código y colócalo en los acrílicos de cada palapa para que tus clientes
+                exploren la carta y soliciten pedidos por WhatsApp sin comisiones.
+              </p>
 
-              {/* Contenedor del QR */}
-              <div className="p-4 bg-white rounded-2xl border-4 border-cyan-800 shadow-inner inline-block mx-auto">
+              <div className="p-5 bg-white rounded-2xl border-4 border-[#0B3954] inline-block mx-auto">
                 <QRCodeSVG
                   value={shareUrl}
-                  size={200}
+                  size={210}
                   bgColor="#ffffff"
-                  fgColor="#0e7490"
+                  fgColor="#0B3954"
                   level="H"
-                  includeMargin={true}
+                  includeMargin
                 />
               </div>
 
-              <div className="text-xs font-bold text-slate-600 bg-slate-50 p-2 rounded-xl">
-                {businessName} · Menú Digital
-              </div>
+              <p className="text-xs font-bold text-slate-700">{businessName}</p>
 
-              <div className="flex gap-2">
-                <button
-                  onClick={() => window.print()}
-                  className="flex-1 py-3 bg-cyan-800 hover:bg-cyan-900 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow touch-press"
-                >
-                  <Printer className="w-4 h-4" />
-                  <span>Imprimir QR</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="w-full py-3 bg-[#0B3954] hover:bg-[#082C42] text-white font-extrabold text-xs rounded-xl flex items-center justify-center gap-2 touch-press"
+              >
+                <Printer className="w-4 h-4 text-amber-400" />
+                <span>Imprimir Señalética QR</span>
+              </button>
             </div>
           )}
-        </div>
-
-        {/* Footer */}
-        <div className="p-3 bg-slate-100 border-t border-slate-200 text-center">
-          <button
-            onClick={onClose}
-            className="text-xs font-bold text-slate-600 hover:text-slate-900"
-          >
-            Volver a Administración del Sistema
-          </button>
         </div>
       </div>
     </div>

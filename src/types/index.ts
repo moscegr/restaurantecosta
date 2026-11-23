@@ -1,21 +1,33 @@
-export type ProductCategory = 
-  | 'Especialidades del Mar' 
-  | 'Pescados y Mariscos' 
-  | 'Bebidas y Chilate' 
-  | 'Botanas y Antojitos' 
-  | 'Postres y Cocos'
-  | 'Hospedaje';
+export type UserRole = 'admin' | 'cajero' | 'mesero' | 'cocina' | 'recepcion';
+
+export interface StaffUser {
+  id: string;
+  name: string;
+  role: UserRole;
+  shift: string;
+  active: boolean;
+}
+
+export type ProductCategory =
+  | 'Especialidades del Mar'
+  | 'Pescados y Mariscos'
+  | 'Bebidas y Chilate'
+  | 'Botanas y Antojitos'
+  | 'Postres y Cocos';
+
+export type KitchenStation = 'cocina' | 'barra' | 'fria';
 
 export interface Product {
-  id?: number;
+  id: string;
   name: string;
   category: ProductCategory;
+  station: KitchenStation;
   price: number;
   costPrice: number;
   stock: number;
   minStock: number;
-  unit: 'pza' | 'orden' | 'kg' | 'vaso' | 'plato' | 'noche' | 'bolsa';
-  icon: string;
+  unit: 'pza' | 'orden' | 'kg' | 'vaso' | 'plato' | 'bolsa';
+  imageUrl: string;
   description?: string;
   active: boolean;
 }
@@ -27,57 +39,56 @@ export interface CartItem {
 }
 
 export type PaymentMethod = 'efectivo' | 'tarjeta' | 'transferencia';
+export type OrderStatus = 'pendiente' | 'en_preparacion' | 'listo' | 'entregado' | 'cobrado' | 'cancelado';
 
-export interface SaleItem {
-  productId: number;
+export interface OrderItem {
+  productId: string;
   name: string;
   quantity: number;
   price: number;
+  costPrice?: number;
   subtotal: number;
+  station?: KitchenStation;
+  notes?: string;
 }
 
-export interface Sale {
-  id?: number;
-  date: string; // ISO string
-  dateString: string; // YYYY-MM-DD
-  items: SaleItem[];
+export interface InvoiceData {
+  rfc: string;
+  razonSocial: string;
+  usoCfdi: string;
+  email: string;
+}
+
+export interface Order {
+  id: string;
+  folio: string;
+  tableOrRamada: string;
+  guestCount: number;
+  waiterId?: string;
+  waiterName: string;
+  items: OrderItem[];
+  subtotal: number;
+  tax: number;
+  tip: number;
+  discount: number;
   total: number;
   costTotal: number;
-  paymentMethod: PaymentMethod;
+  status: OrderStatus;
+  paymentMethod: PaymentMethod | '';
   amountPaid: number;
   change: number;
-  destination: string; // ej. 'Mesa 3', 'Ramada 5', 'Para Llevar', 'Cuarto 4'
+  dateString: string;
   notes?: string;
-  status: 'completada' | 'cancelada';
-}
-
-export type OrderStatus = 'pendiente' | 'en_preparacion' | 'listo' | 'entregado' | 'cobrado';
-
-export interface KitchenOrderItem {
-  productId: number;
-  name: string;
-  quantity: number;
-  price: number;
-  notes?: string;
-}
-
-export interface KitchenOrder {
-  id?: number;
-  tableOrRamada: string;
-  waiterName: string;
-  items: KitchenOrderItem[];
-  total: number;
-  status: OrderStatus;
-  createdAt: string; // ISO
-  dateString: string; // YYYY-MM-DD
-  notes?: string;
+  createdAt: string;
+  paidAt?: string;
+  invoiceData?: InvoiceData;
 }
 
 export type RoomStatus = 'libre' | 'ocupada' | 'limpieza' | 'reservada';
 export type RoomType = 'Sencilla' | 'Doble' | 'Familiar' | 'Cabaña Frente al Mar';
 
 export interface Room {
-  id?: number;
+  id: string;
   number: string;
   name: string;
   type: RoomType;
@@ -87,37 +98,40 @@ export interface Room {
   guestPhone?: string;
   checkInDate?: string;
   checkOutDate?: string;
-  notes?: string;
   capacity: number;
+  imageUrl: string;
+  amenities?: string[];
+  notes?: string;
 }
 
 export type TransactionType = 'ingreso' | 'egreso';
-export type ExpenseCategory = 
-  | 'Pescado y Marisco Fresco' 
-  | 'Hielo y Bebidas' 
-  | 'Carbón y Leña' 
-  | 'Gas' 
-  | 'Abarrotes y Verduras' 
-  | 'Mantenimiento e Higiene' 
-  | 'Nómina / Propinas' 
+export type ExpenseCategory =
+  | 'Pescado y Marisco Fresco'
+  | 'Hielo y Bebidas'
+  | 'Carbón y Leña'
+  | 'Gas'
+  | 'Abarrotes y Verduras'
+  | 'Mantenimiento e Higiene'
+  | 'Nómina / Propinas'
   | 'Venta POS'
   | 'Hospedaje'
   | 'Otro';
 
 export interface Transaction {
-  id?: number;
-  date: string; // ISO
-  dateString: string; // YYYY-MM-DD
+  id: string;
+  date: string;
+  dateString: string;
   type: TransactionType;
   category: ExpenseCategory;
   amount: number;
   description: string;
   paymentMethod: PaymentMethod;
-  referenceId?: number; // Order ID if linked
+  referenceId?: string;
+  userName?: string;
 }
 
 export interface BusinessConfig {
-  id?: number;
+  id?: string;
   businessName: string;
   tagline: string;
   ownerName: string;
@@ -127,9 +141,12 @@ export interface BusinessConfig {
   municipio: 'Copala' | 'Marquelia';
   state: string;
   rfc?: string;
+  taxRegime?: string;
+  ivaRate?: number;
   wifiName?: string;
   wifiPassword?: string;
   currency: string;
+  thermalPaperWidth?: '58mm' | '80mm';
 }
 
 export interface AIRecommendation {
@@ -137,11 +154,32 @@ export interface AIRecommendation {
   type: 'forecast' | 'inventory_alert' | 'performance_insight';
   title: string;
   description: string;
-  rationale: string; // El "porqué" explicable
+  rationale: string;
+  urgency: 'info' | 'warning' | 'alert';
   suggestedAction?: {
     label: string;
     actionType: 'restock' | 'view_cash' | 'view_pos';
-    payload?: any;
+    productId?: string;
   };
-  urgency: 'info' | 'warning' | 'alert';
+}
+
+export interface AnalyticsResponse {
+  todaySummary: {
+    ingresos: number;
+    egresos: number;
+    utilidad: number;
+    occupiedRooms: number;
+    totalRooms: number;
+    openOrdersCount: number;
+  };
+  dailySeries: {
+    date: string;
+    label: string;
+    ingresos: number;
+    egresos: number;
+    utilidad: number;
+  }[];
+  paymentBreakdown: { name: string; value: number }[];
+  topProducts: { name: string; quantity: number; revenue: number }[];
+  aiInsights: AIRecommendation[];
 }

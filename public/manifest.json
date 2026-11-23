@@ -1,20 +1,20 @@
 {
-  "name": "Timón Costa Chica - Toma el timón de tu negocio",
-  "short_name": "Timón",
-  "description": "Sistema Web Progresivo para restaurantes, ramadas y hospedaje de Copala y Marquelia, Guerrero",
+  "name": "Timón Costa Chica - POS y Gestión Hotelera",
+  "short_name": "Timón POS",
+  "description": "Plataforma comercial POS, KDS Cocina, Hospedaje e IA Ligera para restaurantes y cabañas de Copala y Marquelia, Guerrero",
   "start_url": "/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#0e7490",
-  "theme_color": "#0e7490",
+  "background_color": "#0B3954",
+  "theme_color": "#0B3954",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22><circle cx=%2296%22 cy=%2296%22 r=%2290%22 fill=%22%230891b2%22/><text y=%22.9em%22 font-size=%22120%22 x=%2235%22>🧭</text></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%230B3954'/><circle cx='96' cy='96' r='52' fill='none' stroke='%23F59E0B' stroke-width='12'/><circle cx='96' cy='96' r='14' fill='%23F59E0B'/></svg>",
       "sizes": "192x192",
       "type": "image/svg+xml"
     },
     {
-      "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22><circle cx=%22256%22 cy=%22256%22 r=%22240%22 fill=%22%230891b2%22/><text y=%22.9em%22 font-size=%22320%22 x=%2295%22>🧭</text></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%230B3954'/><circle cx='256' cy='256' r='140' fill='none' stroke='%23F59E0B' stroke-width='30'/><circle cx='256' cy='256' r='36' fill='%23F59E0B'/></svg>",
       "sizes": "512x512",
       "type": "image/svg+xml"
     }

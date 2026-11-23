@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
-import { Sidebar, type ActiveTab } from './components/Sidebar';
+import { Sidebar, getAllowedTabsForRole, type ActiveTab } from './components/Sidebar';
+import { PinLoginScreen } from './components/Auth/PinLoginScreen';
 import { DashboardView } from './components/Hoy/DashboardView';
 import { PosView } from './components/Vender/PosView';
 import { MeseroView } from './components/Mesero/MeseroView';
@@ -8,96 +9,122 @@ import { CocinaView } from './components/Cocina/CocinaView';
 import { CuartosView } from './components/Cuartos/CuartosView';
 import { InventarioView } from './components/Inventario/InventarioView';
 import { DineroView } from './components/Dinero/DineroView';
+import { PersonalView } from './components/Personal/PersonalView';
 import { SitioPublicoModal } from './components/SitioPublico/SitioPublicoModal';
 import { ConfigModal } from './components/Configuracion/ConfigModal';
 import { QuickExpenseModal } from './components/Dinero/QuickExpenseModal';
 
-import { db } from './db/db';
-import { initDatabaseWithSeedData } from './db/seedData';
-import type { BusinessConfig, Product, Room } from './types';
+import { api, clearSession, getStoredToken, getStoredUser } from './services/api';
+import type { BusinessConfig, Product, Room, StaffUser } from './types';
 
 const TAB_TITLES: Record<ActiveTab, string> = {
-  hoy: '🏠 Resumen Ejecutivo & Asistente IA',
-  vender: '🛍️ Punto de Venta Touch (Caja)',
-  mesero: '📝 Comandero Móvil para Meseros',
-  cocina: '👨‍🍳 Pantalla de Cocina & Brasas (KDS en vivo)',
-  cuartos: '🛏️ Tablero de Cuartos & Cabañas',
-  inventario: '📦 Control de Inventario & Platillos',
-  dinero: '💵 Control de Dinero & Caja (RESICO SAT)',
+  hoy: 'Panel Ejecutivo, Gráficas e IA Ligera',
+  vender: 'Caja POS y Cobro de Cuentas Abiertas',
+  mesero: 'Comandero Móvil de Mesas y Ramadas',
+  cocina: 'Pantalla de Cocina y Estaciones (KDS)',
+  cuartos: 'Gestión de Hospedaje y Cabañas',
+  inventario: 'Catálogo de Platillos e Inventario',
+  dinero: 'Finanzas, Facturación PDF y Control RESICO',
+  personal: 'Administración de Personal y Roles',
 };
 
 export function App() {
+  const [user, setUser] = useState<StaffUser | null>(() =>
+    getStoredToken() ? getStoredUser() : null
+  );
   const [activeTab, setActiveTab] = useState<ActiveTab>('hoy');
   const [config, setConfig] = useState<BusinessConfig | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [pendingKitchenCount, setPendingKitchenCount] = useState<number>(0);
-  const [isReady, setIsReady] = useState(false);
 
-  // Modales Globales
   const [isPublicMenuOpen, setIsPublicMenuOpen] = useState(false);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [isQuickExpenseOpen, setIsQuickExpenseOpen] = useState(false);
 
-  // Inicialización de la base de datos
-  const loadAppData = async () => {
+  const loadPublicCatalog = async () => {
     try {
-      // Si la base tiene pocos productos (versión inicial anterior), forzar recarga con los datos abundantes
-      const count = await db.products.count();
-      if (count < 15) {
-        await initDatabaseWithSeedData(true);
-      } else {
-        await initDatabaseWithSeedData();
-      }
-
-      const [allConfig, allProducts, allRooms, kitchenOrdersCount] = await Promise.all([
-        db.businessConfig.toArray(),
-        db.products.toArray(),
-        db.rooms.toArray(),
-        db.kitchenOrders.where('status').anyOf(['pendiente', 'en_preparacion']).count(),
+      const [cfg, prods, rms] = await Promise.all([
+        api.getConfig(),
+        api.getProducts(),
+        api.getRooms(),
       ]);
-
-      if (allConfig.length > 0) {
-        setConfig(allConfig[0]);
-      }
-      setProducts(allProducts);
-      setRooms(allRooms);
-      setPendingKitchenCount(kitchenOrdersCount);
-      setIsReady(true);
+      setConfig(cfg);
+      setProducts(prods);
+      setRooms(rms);
     } catch (err) {
-      console.error('Error inicializando la aplicación:', err);
+      console.error('Error cargando catálogo inicial:', err);
+    }
+  };
+
+  const loadAuthenticatedCounters = async () => {
+    if (!getStoredToken()) return;
+    try {
+      const openOrders = await api.getOrders({ status: 'pendiente,en_preparacion' });
+      setPendingKitchenCount(openOrders.length);
+    } catch {
+      // ignore if token expired
     }
   };
 
   useEffect(() => {
-    loadAppData();
+    loadPublicCatalog();
   }, []);
 
-  if (!isReady) {
+  useEffect(() => {
+    if (user) {
+      const allowed = getAllowedTabsForRole(user.role);
+      if (!allowed.includes(activeTab)) {
+        setActiveTab(allowed[0]);
+      }
+      loadPublicCatalog();
+      loadAuthenticatedCounters();
+    }
+  }, [user]);
+
+  const handleLogout = () => {
+    clearSession();
+    setUser(null);
+  };
+
+  // Si no hay sesión activa, mostrar pantalla de acceso rápido con PIN táctil
+  if (!user) {
     return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center bg-cyan-950 text-white p-4">
-        <div className="w-14 h-14 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <h2 className="text-xl font-black text-amber-300">Timón Costa Chica</h2>
-        <p className="text-xs text-teal-200 mt-1">
-          Preparando tu punto de venta e inteligencia artificial ligera...
-        </p>
-      </div>
+      <>
+        <PinLoginScreen
+          config={config}
+          onLoginSuccess={(loggedUser) => {
+            setUser(loggedUser);
+            const allowed = getAllowedTabsForRole(loggedUser.role);
+            setActiveTab(allowed[0]);
+          }}
+          onOpenPublicMenu={() => setIsPublicMenuOpen(true)}
+        />
+        <SitioPublicoModal
+          products={products}
+          rooms={rooms}
+          config={config}
+          isOpen={isPublicMenuOpen}
+          onClose={() => setIsPublicMenuOpen(false)}
+        />
+      </>
     );
   }
 
-  // Contadores para badges en Sidebar
-  const occupiedRoomsCount = rooms.filter(r => r.status === 'ocupada').length;
-  const lowStockCount = products.filter(p => p.stock <= p.minStock).length;
+  const occupiedRoomsCount = rooms.filter((r) => r.status === 'ocupada').length;
+  const lowStockCount = products.filter((p) => p.stock <= p.minStock).length;
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-slate-100 font-sans antialiased text-slate-900 select-none">
-      {/* 1. Menú Lateral Izquierdo (Para tablets, pantallas touch y desktop sin traslapes) */}
+    <div className="flex h-screen w-screen overflow-hidden bg-[#F4F6F9] antialiased text-slate-900 select-none">
+      {/* Menú Lateral con control estricto de roles */}
       <Sidebar
         activeTab={activeTab}
         onChangeTab={(tab) => {
           setActiveTab(tab);
-          loadAppData();
+          loadPublicCatalog();
+          loadAuthenticatedCounters();
         }}
+        user={user}
         config={config}
         occupiedRoomsCount={occupiedRoomsCount}
         lowStockCount={lowStockCount}
@@ -105,15 +132,16 @@ export function App() {
         onOpenPublicMenu={() => setIsPublicMenuOpen(true)}
         onOpenSettings={() => setIsConfigOpen(true)}
         onOpenQuickExpense={() => setIsQuickExpenseOpen(true)}
+        onLogout={handleLogout}
       />
 
-      {/* 2. Área de Trabajo Principal con scroll limpio y sin elementos flotantes que tapen la vista */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0 bg-slate-100">
+      {/* Área Principal */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
         <Navbar
           config={config}
+          user={user}
           activeTabTitle={TAB_TITLES[activeTab]}
           onOpenPublicMenu={() => setIsPublicMenuOpen(true)}
-          onOpenSettings={() => setIsConfigOpen(true)}
         />
 
         <main className="flex-1 flex flex-col overflow-hidden relative">
@@ -125,32 +153,26 @@ export function App() {
           )}
 
           {activeTab === 'vender' && (
-            <PosView config={config} />
+            <PosView
+              config={config}
+              canManageProducts={['admin', 'cajero'].includes(user.role)}
+            />
           )}
 
-          {activeTab === 'mesero' && (
-            <MeseroView />
-          )}
+          {activeTab === 'mesero' && <MeseroView user={user} config={config} />}
 
-          {activeTab === 'cocina' && (
-            <CocinaView />
-          )}
+          {activeTab === 'cocina' && <CocinaView config={config} />}
 
-          {activeTab === 'cuartos' && (
-            <CuartosView />
-          )}
+          {activeTab === 'cuartos' && <CuartosView />}
 
-          {activeTab === 'inventario' && (
-            <InventarioView />
-          )}
+          {activeTab === 'inventario' && <InventarioView />}
 
-          {activeTab === 'dinero' && (
-            <DineroView config={config} />
-          )}
+          {activeTab === 'dinero' && <DineroView config={config} />}
+
+          {activeTab === 'personal' && user.role === 'admin' && <PersonalView />}
         </main>
       </div>
 
-      {/* 3. Modal Sitio Público / Menú Digital QR */}
       <SitioPublicoModal
         products={products}
         rooms={rooms}
@@ -159,19 +181,20 @@ export function App() {
         onClose={() => setIsPublicMenuOpen(false)}
       />
 
-      {/* 4. Modal de Configuración & Datos de Prueba */}
       <ConfigModal
         config={config}
         isOpen={isConfigOpen}
         onClose={() => setIsConfigOpen(false)}
-        onSave={loadAppData}
+        onSave={loadPublicCatalog}
       />
 
-      {/* 5. Modal de Gasto Rápido Global */}
       <QuickExpenseModal
         isOpen={isQuickExpenseOpen}
         onClose={() => setIsQuickExpenseOpen(false)}
-        onSuccess={loadAppData}
+        onSuccess={() => {
+          loadPublicCatalog();
+          loadAuthenticatedCounters();
+        }}
       />
     </div>
   );
