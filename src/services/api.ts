@@ -155,8 +155,11 @@ export const api = {
 
   // Rooms
   getRooms: () => request<Room[]>('/api/rooms'),
+  createRoom: (payload: Omit<Room, 'id'>) =>
+    request<Room>('/api/rooms', { method: 'POST', body: JSON.stringify(payload) }),
   updateRoom: (id: string, payload: Partial<Room>) =>
     request<Room>(`/api/rooms/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  deleteRoom: (id: string) => request<{ ok: boolean }>(`/api/rooms/${id}`, { method: 'DELETE' }),
   checkInRoom: (
     id: string,
     payload: {

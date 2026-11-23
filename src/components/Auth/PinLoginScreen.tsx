@@ -204,14 +204,9 @@ export const PinLoginScreen: React.FC<PinLoginScreenProps> = ({
             )}
           </div>
 
-          {/* Referencia de PINs de prueba */}
           <div className="mt-6 pt-4 border-t border-slate-200">
-            <p className="text-[11px] font-semibold text-slate-500">
-              PINs de demostración: Admin <span className="font-mono font-bold text-slate-800">1234</span> · Cajero{' '}
-              <span className="font-mono font-bold text-slate-800">2222</span> · Mesero{' '}
-              <span className="font-mono font-bold text-slate-800">3333</span> · Cocina{' '}
-              <span className="font-mono font-bold text-slate-800">4444</span> · Recepción{' '}
-              <span className="font-mono font-bold text-slate-800">5555</span>
+            <p className="text-[11px] font-medium text-slate-400">
+              Acceso protegido por PIN personal. Si olvidaste tu clave, solicítala al administrador.
             </p>
           </div>
         </div>

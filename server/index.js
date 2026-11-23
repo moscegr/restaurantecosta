@@ -104,15 +104,19 @@ app.post('/api/users', requireAuth, requireRole('admin'), async (req, res) => {
 app.put('/api/users/:id', requireAuth, requireRole('admin'), async (req, res) => {
   try {
     const { name, role, pin, shift, active } = req.body;
-    const update = { name, role, shift, active };
-    if (pin && String(pin).length === 4) {
+    const update = {};
+    if (name !== undefined) update.name = name;
+    if (role !== undefined) update.role = role;
+    if (shift !== undefined) update.shift = shift;
+    if (active !== undefined) update.active = active;
+    if (pin && /^\d{4}$/.test(String(pin))) {
       update.pinHash = await bcrypt.hash(String(pin), 10);
     }
-    const updated = await User.findByIdAndUpdate(req.params.id, update, { new: true });
+    const updated = await User.findByIdAndUpdate(req.params.id, { $set: update }, { new: true });
     if (!updated) return res.status(404).json({ error: 'Usuario no encontrado.' });
     res.json(updated);
-  } catch {
-    res.status(500).json({ error: 'Error actualizando usuario.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Error actualizando usuario.' });
   }
 });
 
@@ -423,13 +427,31 @@ app.get('/api/rooms', async (_req, res) => {
   }
 });
 
+app.post('/api/rooms', requireAuth, requireRole('admin'), async (req, res) => {
+  try {
+    const created = await Room.create(req.body);
+    res.status(201).json(created);
+  } catch (err) {
+    res.status(400).json({ error: err.message || 'Error creando habitación.' });
+  }
+});
+
 app.put('/api/rooms/:id', requireAuth, requireRole('admin', 'recepcion', 'cajero'), async (req, res) => {
   try {
-    const updated = await Room.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updated = await Room.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
     if (!updated) return res.status(404).json({ error: 'Cuarto no encontrado.' });
     res.json(updated);
+  } catch (err) {
+    res.status(400).json({ error: err.message || 'Error actualizando cuarto.' });
+  }
+});
+
+app.delete('/api/rooms/:id', requireAuth, requireRole('admin'), async (req, res) => {
+  try {
+    await Room.findByIdAndDelete(req.params.id);
+    res.json({ ok: true });
   } catch {
-    res.status(400).json({ error: 'Error actualizando cuarto.' });
+    res.status(500).json({ error: 'Error eliminando cuarto.' });
   }
 });
 

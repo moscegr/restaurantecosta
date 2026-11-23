@@ -29,6 +29,10 @@ const TAB_TITLES: Record<ActiveTab, string> = {
 };
 
 export function App() {
+  const [isPublicRoute, setIsPublicRoute] = useState<boolean>(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('menu') === 'publico' || window.location.pathname === '/menu';
+  });
   const [user, setUser] = useState<StaffUser | null>(() =>
     getStoredToken() ? getStoredUser() : null
   );
@@ -87,6 +91,23 @@ export function App() {
     setUser(null);
   };
 
+  // Si se escaneó el QR (/?menu=publico o /menu), abrir directo el Menú Público sin pedir PIN
+  if (isPublicRoute) {
+    return (
+      <SitioPublicoModal
+        products={products}
+        rooms={rooms}
+        config={config}
+        isOpen={true}
+        standalone={true}
+        onClose={() => {
+          window.history.replaceState({}, '', '/');
+          setIsPublicRoute(false);
+        }}
+      />
+    );
+  }
+
   // Si no hay sesión activa, mostrar pantalla de acceso rápido con PIN táctil
   if (!user) {
     return (
@@ -142,6 +163,7 @@ export function App() {
           user={user}
           activeTabTitle={TAB_TITLES[activeTab]}
           onOpenPublicMenu={() => setIsPublicMenuOpen(true)}
+          onOpenSettings={() => setIsConfigOpen(true)}
         />
 
         <main className="flex-1 flex flex-col overflow-hidden relative">

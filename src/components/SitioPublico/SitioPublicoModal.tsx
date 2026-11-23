@@ -23,6 +23,7 @@ interface SitioPublicoModalProps {
   rooms: Room[];
   config: BusinessConfig | null;
   isOpen: boolean;
+  standalone?: boolean;
   onClose: () => void;
 }
 
@@ -31,6 +32,7 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
   rooms,
   config,
   isOpen,
+  standalone = false,
   onClose,
 }) => {
   const [activeTab, setActiveTab] = useState<'menu' | 'hospedaje' | 'qr'>('menu');
@@ -46,7 +48,7 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
   const businessName = config?.businessName || 'Ramada & Cabañas Las Brisas';
   const phone = config?.phone || '741 123 4567';
   const whatsappNumber = config?.whatsapp?.replace(/\D/g, '') || '527411234567';
-  const shareUrl = window.location.href;
+  const publicMenuUrl = `${window.location.origin}/?menu=publico`;
 
   const updateCart = (productId: string, delta: number) => {
     setWaCart((prev) => {
@@ -96,17 +98,39 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
-      <div className="bg-[#FAF8F5] rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[94vh] border border-slate-200">
+    <div
+      className={
+        standalone
+          ? 'min-h-screen w-screen bg-[#FAF8F5] flex flex-col overflow-y-auto'
+          : 'fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto'
+      }
+    >
+      <div
+        className={
+          standalone
+            ? 'bg-[#FAF8F5] w-full max-w-5xl mx-auto flex flex-col flex-1 shadow-xl border-x border-slate-200'
+            : 'bg-[#FAF8F5] rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[94vh] border border-slate-200'
+        }
+      >
         {/* Hero Costeño Profesional */}
         <div className="relative bg-[#0B3954] text-white p-6">
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white touch-press"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {standalone ? (
+            <button
+              type="button"
+              onClick={onClose}
+              className="absolute top-4 right-4 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-sky-100 touch-press"
+            >
+              Acceso Personal
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onClose}
+              className="absolute top-4 right-4 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white touch-press"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
 
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-amber-400 text-[#0B3954] flex items-center justify-center shadow-lg shrink-0">
@@ -410,7 +434,7 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
 
               <div className="p-5 bg-white rounded-2xl border-4 border-[#0B3954] inline-block mx-auto">
                 <QRCodeSVG
-                  value={shareUrl}
+                  value={publicMenuUrl}
                   size={210}
                   bgColor="#ffffff"
                   fgColor="#0B3954"
@@ -420,6 +444,9 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
               </div>
 
               <p className="text-xs font-bold text-slate-700">{businessName}</p>
+              <p className="text-[11px] font-mono text-slate-500 break-all bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
+                {publicMenuUrl}
+              </p>
 
               <button
                 type="button"

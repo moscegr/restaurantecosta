@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, RefreshCw, Compass } from 'lucide-react';
+import { X, Save, RefreshCw, Compass, CheckCircle2 } from 'lucide-react';
 import type { BusinessConfig } from '../../types';
 import { api } from '../../services/api';
 
@@ -28,22 +28,29 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   const [thermalPaperWidth, setThermalPaperWidth] = useState<'58mm' | '80mm'>('80mm');
   const [wifiName, setWifiName] = useState('');
   const [wifiPassword, setWifiPassword] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [savedMsg, setSavedMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
   const [isResetting, setIsResetting] = useState(false);
 
   useEffect(() => {
-    if (config && isOpen) {
-      setBusinessName(config.businessName || '');
-      setTagline(config.tagline || '');
-      setOwnerName(config.ownerName || '');
-      setPhone(config.phone || '');
-      setWhatsapp(config.whatsapp || '');
-      setAddress(config.address || '');
-      setMunicipio(config.municipio || 'Copala');
-      setRfc(config.rfc || '');
-      setTaxRegime(config.taxRegime || '626 - Régimen Simplificado de Confianza (RESICO)');
-      setThermalPaperWidth(config.thermalPaperWidth || '80mm');
-      setWifiName(config.wifiName || '');
-      setWifiPassword(config.wifiPassword || '');
+    if (isOpen) {
+      setSavedMsg('');
+      setErrorMsg('');
+      if (config) {
+        setBusinessName(config.businessName || '');
+        setTagline(config.tagline || '');
+        setOwnerName(config.ownerName || '');
+        setPhone(config.phone || '');
+        setWhatsapp(config.whatsapp || '');
+        setAddress(config.address || '');
+        setMunicipio(config.municipio || 'Copala');
+        setRfc(config.rfc || '');
+        setTaxRegime(config.taxRegime || '626 - Régimen Simplificado de Confianza (RESICO)');
+        setThermalPaperWidth(config.thermalPaperWidth || '80mm');
+        setWifiName(config.wifiName || '');
+        setWifiPassword(config.wifiPassword || '');
+      }
     }
   }, [config, isOpen]);
 
@@ -52,26 +59,33 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      setSaving(true);
+      setErrorMsg('');
       await api.updateConfig({
-        businessName,
-        tagline,
-        ownerName,
-        phone,
-        whatsapp,
-        address,
+        businessName: businessName.trim(),
+        tagline: tagline.trim(),
+        ownerName: ownerName.trim(),
+        phone: phone.trim(),
+        whatsapp: whatsapp.trim(),
+        address: address.trim(),
         municipio,
         state: 'Guerrero',
-        rfc,
-        taxRegime,
+        rfc: rfc.trim().toUpperCase(),
+        taxRegime: taxRegime.trim(),
         thermalPaperWidth,
-        wifiName,
-        wifiPassword,
+        wifiName: wifiName.trim(),
+        wifiPassword: wifiPassword.trim(),
         currency: 'MXN',
       });
+      setSavedMsg('Configuración guardada en MongoDB.');
       onSave();
-      onClose();
+      setTimeout(() => {
+        onClose();
+      }, 600);
     } catch (err: any) {
-      alert(err.message || 'Error guardando configuración.');
+      setErrorMsg(err.message || 'Error guardando configuración.');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -88,7 +102,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
       onSave();
       onClose();
     } catch (err: any) {
-      alert(err.message);
+      setErrorMsg(err.message || 'Error restableciendo base de datos.');
     } finally {
       setIsResetting(false);
     }
@@ -96,13 +110,15 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-3">
-      <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-slate-200">
+      <div className="bg-white rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-slate-200">
         <div className="bg-[#0B3954] text-white p-5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <Compass className="w-6 h-6 text-amber-400" />
             <div>
               <h3 className="text-base font-extrabold">Configuración del Establecimiento</h3>
-              <p className="text-xs text-sky-200">Datos fiscales RESICO, impresora térmica y WhatsApp</p>
+              <p className="text-xs text-sky-200">
+                Datos del restaurante, facturación RESICO, impresora térmica y WhatsApp
+              </p>
             </div>
           </div>
           <button
@@ -115,6 +131,18 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto flex-1 text-xs sm:text-sm">
+          {errorMsg && (
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
+              {errorMsg}
+            </div>
+          )}
+          {savedMsg && (
+            <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <span>{savedMsg}</span>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="font-bold text-slate-700 block mb-1">Nombre del Negocio *</label>
@@ -123,7 +151,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                 required
                 value={businessName}
                 onChange={(e) => setBusinessName(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:outline-none focus:ring-2 focus:ring-[#087E8B]"
               />
             </div>
             <div>
@@ -132,7 +160,41 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                 type="text"
                 value={ownerName}
                 onChange={(e) => setOwnerName(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#087E8B]"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="font-bold text-slate-700 block mb-1">Eslogan / Subtítulo del Menú</label>
+            <input
+              type="text"
+              value={tagline}
+              onChange={(e) => setTagline(e.target.value)}
+              placeholder="Ej. Cocina Costeña Frente al Mar · Playa Ventura"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#087E8B]"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">Teléfono Visible</label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="741 123 4567"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#087E8B]"
+              />
+            </div>
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">WhatsApp Pedidos (con 52)</label>
+              <input
+                type="text"
+                value={whatsapp}
+                onChange={(e) => setWhatsapp(e.target.value)}
+                placeholder="527411234567"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#087E8B]"
               />
             </div>
           </div>
@@ -162,7 +224,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="font-bold text-slate-700 block mb-1">RFC Emisor (SAT)</label>
               <input
@@ -173,24 +235,14 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
               />
             </div>
             <div>
-              <label className="font-bold text-slate-700 block mb-1">WhatsApp (con 52)</label>
+              <label className="font-bold text-slate-700 block mb-1">Régimen Fiscal</label>
               <input
                 type="text"
-                value={whatsapp}
-                onChange={(e) => setWhatsapp(e.target.value)}
+                value={taxRegime}
+                onChange={(e) => setTaxRegime(e.target.value)}
                 className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"
               />
             </div>
-          </div>
-
-          <div>
-            <label className="font-bold text-slate-700 block mb-1">Régimen Fiscal (PDF Facturas)</label>
-            <input
-              type="text"
-              value={taxRegime}
-              onChange={(e) => setTaxRegime(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"
-            />
           </div>
 
           <div>
@@ -244,10 +296,11 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
             </button>
             <button
               type="submit"
+              disabled={saving}
               className="flex-1 py-3 bg-[#0B3954] hover:bg-[#082C42] text-white font-extrabold rounded-xl text-xs flex items-center justify-center gap-1.5 touch-press"
             >
               <Save className="w-4 h-4 text-amber-400" />
-              <span>Guardar Configuración</span>
+              <span>{saving ? 'Guardando...' : 'Guardar Cambios'}</span>
             </button>
           </div>
         </form>

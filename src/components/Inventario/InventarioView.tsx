@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   UtensilsCrossed,
+  Trash2,
 } from 'lucide-react';
 import type { Product } from '../../types';
 import { api } from '../../services/api';
@@ -217,6 +218,23 @@ export const InventarioView: React.FC = () => {
                   title="Editar producto"
                 >
                   <Edit3 className="w-4 h-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!window.confirm(`¿Eliminar "${p.name}" del catálogo?`)) return;
+                    try {
+                      await api.deleteProduct(p.id);
+                      await loadProducts();
+                    } catch (err: any) {
+                      alert(err.message);
+                    }
+                  }}
+                  className="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 touch-press"
+                  title="Eliminar producto"
+                >
+                  <Trash2 className="w-4 h-4" />
                 </button>
 
                 <button

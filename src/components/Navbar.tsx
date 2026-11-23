@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Wifi, WifiOff, Building2, Database, QrCode } from 'lucide-react';
+import { Wifi, WifiOff, Building2, Database, QrCode, Settings } from 'lucide-react';
 import type { BusinessConfig, StaffUser } from '../types';
 
 interface NavbarProps {
@@ -7,6 +7,7 @@ interface NavbarProps {
   user: StaffUser;
   activeTabTitle: string;
   onOpenPublicMenu: () => void;
+  onOpenSettings: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -14,6 +15,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   user,
   activeTabTitle,
   onOpenPublicMenu,
+  onOpenSettings,
 }) => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
@@ -81,6 +83,18 @@ export const Navbar: React.FC<NavbarProps> = ({
           <QrCode className="w-3.5 h-3.5 text-amber-400" />
           <span className="hidden sm:inline">Menú y Reservas</span>
         </button>
+
+        {user.role === 'admin' && (
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 touch-press"
+            title="Configuración del negocio"
+          >
+            <Settings className="w-3.5 h-3.5 text-[#0B3954]" />
+            <span className="hidden md:inline">Ajustes</span>
+          </button>
+        )}
       </div>
     </header>
   );
