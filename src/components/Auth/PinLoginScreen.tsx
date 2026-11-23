@@ -117,8 +117,9 @@ export const PinLoginScreen: React.FC<PinLoginScreenProps> = ({
   };
 
   return (
-    <div className="min-h-screen w-screen bg-[#072436] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-      <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 border border-slate-200/20">
+    <div className="h-[100dvh] w-full bg-[#072436] overflow-y-auto overscroll-contain">
+      <div className="min-h-full w-full flex items-center justify-center p-3 sm:p-6">
+        <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 border border-slate-200/20 my-auto">
         {/* Panel Izquierdo: Identidad y Selección de Personal */}
         <div className="lg:col-span-7 bg-[#F8FAFC] p-6 sm:p-8 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-200">
           <div>
@@ -285,6 +286,7 @@ export const PinLoginScreen: React.FC<PinLoginScreenProps> = ({
               <Delete className="w-5 h-5" />
             </button>
           </div>
+        </div>
         </div>
       </div>
     </div>

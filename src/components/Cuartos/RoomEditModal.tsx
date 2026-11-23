@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Image as ImageIcon } from 'lucide-react';
+import { X, Save, Image as ImageIcon, Upload, Loader2 } from 'lucide-react';
 import type { Room, RoomType } from '../../types';
 import { api } from '../../services/api';
 
@@ -50,6 +50,22 @@ export const RoomEditModal: React.FC<RoomEditModalProps> = ({
   const [imageUrl, setImageUrl] = useState(PRESET_ROOM_PHOTOS[0].url);
   const [amenitiesStr, setAmenitiesStr] = useState('Vista al mar, Hamacas, Wi-Fi');
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploading(true);
+      const { url } = await api.uploadImage(file);
+      setImageUrl(url);
+    } catch (err: any) {
+      alert(err.message || 'Error subiendo fotografía.');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -197,11 +213,45 @@ export const RoomEditModal: React.FC<RoomEditModalProps> = ({
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             <label className="font-bold text-slate-700 flex items-center gap-1.5">
               <ImageIcon className="w-4 h-4 text-[#087E8B]" />
-              <span>Fotografía (galería rápida o URL)</span>
+              <span>Fotografía (Subir archivo persistente o galería)</span>
             </label>
+
+            <div className="flex items-center gap-3">
+              <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                {imageUrl ? (
+                  <img src={imageUrl} alt="Vista previa" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-slate-300">
+                    <ImageIcon className="w-6 h-6" />
+                  </div>
+                )}
+              </div>
+
+              <label className="flex-1 py-3 px-4 rounded-xl border-2 border-dashed border-[#087E8B]/50 bg-sky-50/50 hover:bg-sky-50 text-[#0B3954] font-bold text-xs flex items-center justify-center gap-2 cursor-pointer touch-press">
+                {uploading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Subiendo imagen...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4 text-[#087E8B]" />
+                    <span>Subir foto desde dispositivo / cámara</span>
+                  </>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={uploading}
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
             <div className="grid grid-cols-4 gap-2">
               {PRESET_ROOM_PHOTOS.map((ph) => (
                 <button
@@ -218,10 +268,10 @@ export const RoomEditModal: React.FC<RoomEditModalProps> = ({
               ))}
             </div>
             <input
-              type="url"
+              type="text"
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://..."
+              placeholder="/uploads/... o https://..."
               className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
             />
           </div>

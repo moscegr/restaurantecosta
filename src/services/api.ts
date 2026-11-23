@@ -200,4 +200,21 @@ export const api = {
   updateConfig: (payload: Partial<BusinessConfig>) =>
     request<BusinessConfig>('/api/config', { method: 'PUT', body: JSON.stringify(payload) }),
   resetSeed: () => request<{ seeded: boolean; message: string }>('/api/seed', { method: 'POST' }),
+
+  // Subida persistente de imágenes
+  uploadImage: async (file: File): Promise<{ url: string }> => {
+    const token = getStoredToken();
+    const formData = new FormData();
+    formData.append('image', file);
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.error || 'Error subiendo imagen.');
+    }
+    return data as { url: string };
+  },
 };

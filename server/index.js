@@ -4,6 +4,9 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import helmet from 'helmet';
 import bcrypt from 'bcryptjs';
+import multer from 'multer';
+import crypto from 'crypto';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -22,10 +25,39 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 4000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/timon_costa_chica';
+const UPLOADS_DIR = process.env.UPLOADS_DIR || path.resolve(__dirname, '../uploads');
+
+fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
+    const safeExt = ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext) ? ext : '.jpg';
+    cb(null, `${Date.now()}-${crypto.randomBytes(6).toString('hex')}${safeExt}`);
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) cb(null, true);
+    else cb(new Error('Solo se permiten archivos de imagen (JPG, PNG, WEBP).'));
+  },
+});
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
+app.use('/uploads', express.static(UPLOADS_DIR));
+
+app.post('/api/upload', requireAuth, requireRole('admin', 'cajero'), upload.single('image'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No se recibió ninguna imagen.' });
+  }
+  res.status(201).json({ url: `/uploads/${req.file.filename}` });
+});
 
 // Helper to generate unique folio
 function generateFolio(dateStr) {
@@ -771,7 +803,7 @@ app.post('/api/seed', requireAuth, requireRole('admin'), async (_req, res) => {
 // ==========================================
 const distPath = path.resolve(__dirname, '../dist');
 app.use(express.static(distPath));
-app.get(/^(?!\/api).*/, (_req, res) => {
+app.get(/^(?!\/(api|uploads)).*/, (_req, res) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
 

@@ -9,8 +9,11 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=4000
+      - UPLOADS_DIR=/app/uploads
       - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017/timon_costa_chica}
       - JWT_SECRET=${JWT_SECRET:-cambia-esta-clave-secreta-en-coolify}
+    volumes:
+      - uploads_data:/app/uploads
     depends_on:
       mongodb:
         condition: service_healthy
@@ -28,3 +31,4 @@ services:
 
 volumes:
   mongo_data:
+  uploads_data:

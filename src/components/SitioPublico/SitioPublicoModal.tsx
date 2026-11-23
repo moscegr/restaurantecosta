@@ -136,19 +136,19 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
     <div
       className={
         standalone
-          ? 'min-h-screen w-screen bg-[#FAF8F5] flex flex-col overflow-y-auto'
-          : 'fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-0 sm:p-4 overflow-y-auto'
+          ? 'h-[100dvh] w-full bg-[#FAF8F5] flex flex-col overflow-hidden'
+          : 'fixed inset-0 h-[100dvh] z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-0 sm:p-4 overflow-hidden'
       }
     >
       <div
         className={
           standalone
-            ? 'bg-[#FAF8F5] w-full max-w-5xl mx-auto flex flex-col flex-1 shadow-xl border-x border-slate-200'
-            : 'bg-[#FAF8F5] sm:rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col h-full sm:h-auto sm:max-h-[94vh] border border-slate-200'
+            ? 'bg-[#FAF8F5] w-full max-w-5xl mx-auto flex flex-col flex-1 min-h-0 shadow-xl border-x border-slate-200 overflow-hidden'
+            : 'bg-[#FAF8F5] sm:rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col h-full sm:h-auto sm:max-h-[92dvh] min-h-0 border border-slate-200'
         }
       >
         {/* Hero Costeño Mobile-First */}
-        <div className="relative bg-[#0B3954] text-white p-4 sm:p-6">
+        <div className="relative bg-[#0B3954] text-white p-4 sm:p-6 shrink-0">
           {standalone ? (
             <button
               type="button"
@@ -205,7 +205,7 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
         </div>
 
         {/* Pestañas */}
-        <div className="flex border-b border-slate-200 bg-white sticky top-0 z-10">
+        <div className="flex border-b border-slate-200 bg-white shrink-0">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
@@ -227,7 +227,7 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
         </div>
 
         {/* Contenido */}
-        <div className="p-3.5 sm:p-5 overflow-y-auto flex-1 space-y-4 pb-28">
+        <div className="p-3.5 sm:p-5 overflow-y-auto overscroll-contain flex-1 min-h-0 space-y-4 pb-8">
           {activeTab === 'menu' && (
             <>
               {/* Buscador + Categorías swipeables para smartphone */}
