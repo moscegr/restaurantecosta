@@ -188,11 +188,13 @@ export function App() {
             />
           )}
 
-          {activeTab === 'mesero' && <MeseroView user={user} config={config} />}
+          {activeTab === 'mesero' && (
+            <MeseroView user={user} config={config} onConfigUpdated={loadPublicCatalog} />
+          )}
 
           {activeTab === 'cocina' && <CocinaView config={config} />}
 
-          {activeTab === 'cuartos' && <CuartosView />}
+          {activeTab === 'cuartos' && <CuartosView isAdmin={user.role === 'admin'} />}
 
           {activeTab === 'inventario' && <InventarioView />}
 

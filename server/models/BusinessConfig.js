@@ -17,6 +17,22 @@ const businessConfigSchema = new mongoose.Schema(
     wifiPassword: { type: String, default: '' },
     currency: { type: String, default: 'MXN' },
     thermalPaperWidth: { type: String, enum: ['58mm', '80mm'], default: '80mm' },
+    tables: {
+      type: [String],
+      default: [
+        'Ramada 1 (Playa)',
+        'Ramada 2 (Playa)',
+        'Ramada 3 (Playa)',
+        'Ramada 4 (Playa)',
+        'Ramada 5 (Playa)',
+        'Mesa 1 (Interior)',
+        'Mesa 2 (Palapa)',
+        'Mesa 3 (Palapa)',
+        'Mesa 4 (Palapa)',
+        'Barra Principal',
+        'Para Llevar',
+      ],
+    },
   },
   { timestamps: true }
 );

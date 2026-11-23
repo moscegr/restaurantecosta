@@ -1,13 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { BedDouble, Sparkles, User, Calendar, Users } from 'lucide-react';
+import { BedDouble, Sparkles, User, Calendar, Users, Plus, Edit3, Trash2 } from 'lucide-react';
 import type { Room, RoomStatus } from '../../types';
 import { api } from '../../services/api';
 import { RoomModal } from './RoomModal';
+import { RoomEditModal } from './RoomEditModal';
 
-export const CuartosView: React.FC = () => {
+interface CuartosViewProps {
+  isAdmin?: boolean;
+}
+
+export const CuartosView: React.FC<CuartosViewProps> = ({ isAdmin = false }) => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingRoom, setEditingRoom] = useState<Room | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState<'todos' | RoomStatus>('todos');
 
   const loadRooms = async () => {
@@ -23,6 +30,17 @@ export const CuartosView: React.FC = () => {
     loadRooms();
   }, []);
 
+  const handleDeleteRoom = async (e: React.MouseEvent, room: Room) => {
+    e.stopPropagation();
+    if (!window.confirm(`¿Eliminar "${room.name}" definitivamente?`)) return;
+    try {
+      await api.deleteRoom(room.id);
+      await loadRooms();
+    } catch (err: any) {
+      alert(err.message || 'No se pudo eliminar.');
+    }
+  };
+
   const total = rooms.length;
   const libres = rooms.filter((r) => r.status === 'libre').length;
   const ocupadas = rooms.filter((r) => r.status === 'ocupada').length;
@@ -34,16 +52,30 @@ export const CuartosView: React.FC = () => {
   return (
     <div className="flex-1 overflow-y-auto p-4 sm:p-6 max-w-7xl mx-auto w-full space-y-5 pb-16">
       <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-extrabold text-slate-900">
               Tablero de Hospedaje y Cabañas
             </h2>
             <p className="text-xs sm:text-sm text-slate-500">
               <span className="font-bold text-[#0B3954]">{ocupadas} ocupadas</span> de {total}{' '}
-              unidades totales. Toca cualquier unidad para gestionar entrada, salida o limpieza.
+              unidades totales. Toca cualquier unidad para registrar entrada, salida o limpieza.
             </p>
           </div>
+
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => {
+                setEditingRoom(null);
+                setIsEditModalOpen(true);
+              }}
+              className="px-4 py-2.5 bg-[#0B3954] hover:bg-[#082C42] text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 touch-press shadow-xs shrink-0"
+            >
+              <Plus className="w-4 h-4 text-amber-400" />
+              <span>Nueva Cabaña / Cuarto</span>
+            </button>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -85,13 +117,14 @@ export const CuartosView: React.FC = () => {
               : 'bg-indigo-600 text-white';
 
           return (
-            <button
+            <div
               key={room.id}
-              type="button"
               onClick={() => {
                 setSelectedRoom(room);
                 setIsModalOpen(true);
               }}
+              role="button"
+              tabIndex={0}
               className="bg-white rounded-2xl border border-slate-200 hover:border-[#087E8B] shadow-xs hover:shadow-md overflow-hidden text-left flex flex-col justify-between touch-press"
             >
               <div className="relative h-32 w-full bg-slate-100">
@@ -148,14 +181,41 @@ export const CuartosView: React.FC = () => {
                   )}
                 </div>
 
-                <div className="pt-2.5 border-t border-slate-100 flex items-baseline justify-between">
-                  <span className="text-base font-extrabold text-slate-900">
-                    ${room.pricePerNight}
-                  </span>
-                  <span className="text-[11px] font-semibold text-slate-400">MXN / noche</span>
+                <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
+                  <div>
+                    <span className="text-base font-extrabold text-slate-900">
+                      ${room.pricePerNight}
+                    </span>
+                    <span className="text-[11px] font-semibold text-slate-400 ml-1">/ noche</span>
+                  </div>
+
+                  {isAdmin && (
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingRoom(room);
+                          setIsEditModalOpen(true);
+                        }}
+                        className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700"
+                        title="Editar cuarto o tarifa"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => handleDeleteRoom(e, room)}
+                        className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600"
+                        title="Eliminar cuarto"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
-            </button>
+            </div>
           );
         })}
       </div>
@@ -165,6 +225,13 @@ export const CuartosView: React.FC = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onUpdate={loadRooms}
+      />
+
+      <RoomEditModal
+        roomToEdit={editingRoom}
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSuccess={loadRooms}
       />
     </div>
   );

@@ -188,19 +188,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           </div>
           <div className="mt-3 flex items-end justify-between">
-            <div>
+            <button
+              type="button"
+              onClick={() => onGoToTab('cuartos')}
+              className="text-left hover:opacity-80 touch-press"
+            >
               <p className="text-2xl font-extrabold text-slate-900">
                 {summary.occupiedRooms} / {summary.totalRooms}
               </p>
               <p className="text-xs text-slate-500 font-medium">Cabañas ocupadas</p>
-            </div>
+            </button>
             <button
               type="button"
-              onClick={() => onGoToTab('cocina')}
-              className="px-2.5 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold flex items-center gap-1 touch-press"
+              onClick={() => onGoToTab('mesero')}
+              className="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-xs font-bold flex items-center gap-1 touch-press"
             >
               <UtensilsCrossed className="w-3.5 h-3.5" />
-              <span>{summary.openOrdersCount} activas</span>
+              <span>{summary.openOrdersCount} mesas activas</span>
             </button>
           </div>
         </div>

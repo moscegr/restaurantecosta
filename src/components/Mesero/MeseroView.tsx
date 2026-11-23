@@ -9,6 +9,7 @@ import {
   Users,
   Printer,
   CheckCircle2,
+  SlidersHorizontal,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import type {
@@ -21,13 +22,15 @@ import type {
 } from '../../types';
 import { api } from '../../services/api';
 import { printThermalTicket } from '../../services/pdfService';
+import { TablesManageModal } from './TablesManageModal';
 
 interface MeseroViewProps {
   user: StaffUser;
   config: BusinessConfig | null;
+  onConfigUpdated?: () => void;
 }
 
-const ALL_TABLES = [
+const DEFAULT_TABLES = [
   'Ramada 1 (Playa)',
   'Ramada 2 (Playa)',
   'Ramada 3 (Playa)',
@@ -50,10 +53,12 @@ const CATEGORIES: ('Todos' | ProductCategory)[] = [
   'Postres y Cocos',
 ];
 
-export const MeseroView: React.FC<MeseroViewProps> = ({ user, config }) => {
+export const MeseroView: React.FC<MeseroViewProps> = ({ user, config, onConfigUpdated }) => {
+  const tableList = config?.tables && config.tables.length > 0 ? config.tables : DEFAULT_TABLES;
   const [products, setProducts] = useState<Product[]>([]);
   const [activeOrders, setActiveOrders] = useState<Order[]>([]);
-  const [selectedTable, setSelectedTable] = useState<string>('Ramada 1 (Playa)');
+  const [selectedTable, setSelectedTable] = useState<string>(tableList[0] || 'Ramada 1 (Playa)');
+  const [isTablesModalOpen, setIsTablesModalOpen] = useState(false);
   const [guestCount, setGuestCount] = useState<number>(2);
   const [currentItems, setCurrentItems] = useState<OrderItem[]>([]);
   const [generalNotes, setGeneralNotes] = useState<string>('');
@@ -182,19 +187,31 @@ export const MeseroView: React.FC<MeseroViewProps> = ({ user, config }) => {
         <div className="bg-white p-3.5 sm:p-4 border-b border-slate-200 space-y-3">
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs font-bold text-slate-500">
-              Mesas y Ramadas ({activeOrders.length} abiertas)
+              Mesas y Enramadas ({activeOrders.length} abiertas)
             </span>
-            {feedback && (
-              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                {feedback}
-              </span>
-            )}
+            <div className="flex items-center gap-2">
+              {feedback && (
+                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  {feedback}
+                </span>
+              )}
+              {user.role === 'admin' && (
+                <button
+                  type="button"
+                  onClick={() => setIsTablesModalOpen(true)}
+                  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#0B3954] border border-slate-200 text-xs font-bold flex items-center gap-1.5 touch-press"
+                >
+                  <SlidersHorizontal className="w-3.5 h-3.5" />
+                  <span>Gestionar Mesas / Enramadas</span>
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Carrusel de Mesas */}
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
-            {ALL_TABLES.map((t) => {
+            {tableList.map((t) => {
               const isSelected = selectedTable === t;
               const active = activeOrders.find((o) => o.tableOrRamada === t);
               const isReady = active?.status === 'listo';
@@ -459,6 +476,16 @@ export const MeseroView: React.FC<MeseroViewProps> = ({ user, config }) => {
           </button>
         </div>
       </div>
+
+      <TablesManageModal
+        tables={tableList}
+        isOpen={isTablesModalOpen}
+        onClose={() => setIsTablesModalOpen(false)}
+        onSaved={() => {
+          onConfigUpdated?.();
+          loadData();
+        }}
+      />
     </div>
   );
 };

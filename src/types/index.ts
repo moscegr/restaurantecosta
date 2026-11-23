@@ -147,6 +147,7 @@ export interface BusinessConfig {
   wifiPassword?: string;
   currency: string;
   thermalPaperWidth?: '58mm' | '80mm';
+  tables?: string[];
 }
 
 export interface AIRecommendation {

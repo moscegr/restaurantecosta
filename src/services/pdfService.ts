@@ -245,14 +245,42 @@ export function printThermalTicket(
       <title>Ticket ${order.folio}</title>
       <style>
         @page { size: ${paperWidth} auto; margin: 0; }
+        * { box-sizing: border-box; }
         body {
           font-family: 'Courier New', Courier, monospace;
-          width: ${widthCss};
-          margin: 0 auto;
-          padding: 4mm 2mm;
+          background: #f1f5f9;
+          margin: 0;
+          padding: 16px;
           color: #000;
+        }
+        .toolbar {
+          max-width: 360px;
+          margin: 0 auto 14px;
+          display: flex;
+          gap: 8px;
+          font-family: system-ui, -apple-system, sans-serif;
+        }
+        .btn {
+          flex: 1;
+          padding: 11px 14px;
+          border: none;
+          border-radius: 10px;
+          font-weight: 700;
+          font-size: 13px;
+          cursor: pointer;
+        }
+        .btn-primary { background: #0B3954; color: #fff; }
+        .btn-secondary { background: #e2e8f0; color: #1e293b; }
+        .ticket {
+          width: ${widthCss};
+          min-width: 260px;
+          margin: 0 auto;
+          background: #fff;
+          padding: 16px 12px;
+          border-radius: 10px;
+          box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
           font-size: ${fontSize};
-          line-height: 1.3;
+          line-height: 1.35;
         }
         .center { text-align: center; }
         .bold { font-weight: 700; }
@@ -262,35 +290,46 @@ export function printThermalTicket(
         .row { display: flex; justify-content: space-between; margin: 2px 0; }
         .total { font-size: 14px; font-weight: 800; margin-top: 4px; }
         table { width: 100%; border-collapse: collapse; }
+        @media print {
+          body { background: #fff; padding: 0; }
+          .toolbar { display: none !important; }
+          .ticket {
+            width: ${widthCss};
+            min-width: auto;
+            box-shadow: none;
+            border-radius: 0;
+            padding: 3mm 2mm;
+          }
+        }
       </style>
     </head>
     <body>
-      <div class="center">
-        <div class="title">${config?.businessName || 'Ramada Las Brisas'}</div>
-        <div class="small">${config?.address || ''}, ${config?.municipio || 'Copala'}, Gro.</div>
-        ${config?.rfc && mode === 'cliente' ? `<div class="small">RFC: ${config.rfc}</div>` : ''}
+      <div class="toolbar">
+        <button class="btn btn-primary" onclick="window.print()">Imprimir (${paperWidth})</button>
+        <button class="btn btn-secondary" onclick="window.close()">Cerrar</button>
       </div>
-      <div class="divider"></div>
-      <div class="row"><span>Folio:</span><span class="bold">${order.folio}</span></div>
-      <div class="row"><span>Fecha:</span><span>${dateStr}</span></div>
-      <div class="row"><span>Mesa:</span><span class="bold">${order.tableOrRamada}</span></div>
-      <div class="row"><span>Atiende:</span><span>${order.waiterName}</span></div>
-      <div class="divider"></div>
-      <table>
-        <tbody>${itemsHtml}</tbody>
-      </table>
-      ${totalsHtml}
-      <script>
-        window.onload = function() {
-          window.print();
-          setTimeout(function() { window.close(); }, 400);
-        };
-      </script>
+      <div class="ticket">
+        <div class="center">
+          <div class="title">${config?.businessName || 'Ramada Las Brisas'}</div>
+          <div class="small">${config?.address || ''}, ${config?.municipio || 'Copala'}, Gro.</div>
+          ${config?.rfc && mode === 'cliente' ? `<div class="small">RFC: ${config.rfc}</div>` : ''}
+        </div>
+        <div class="divider"></div>
+        <div class="row"><span>Folio:</span><span class="bold">${order.folio}</span></div>
+        <div class="row"><span>Fecha:</span><span>${dateStr}</span></div>
+        <div class="row"><span>Mesa:</span><span class="bold">${order.tableOrRamada}</span></div>
+        <div class="row"><span>Atiende:</span><span>${order.waiterName}</span></div>
+        <div class="divider"></div>
+        <table>
+          <tbody>${itemsHtml}</tbody>
+        </table>
+        ${totalsHtml}
+      </div>
     </body>
     </html>
   `;
 
-  const printWin = window.open('', '_blank', 'width=360,height=640');
+  const printWin = window.open('', '_blank', 'width=520,height=780,scrollbars=yes,resizable=yes');
   if (printWin) {
     printWin.document.open();
     printWin.document.write(html);

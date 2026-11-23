@@ -54,6 +54,10 @@ const DESTINATIONS = [
 ];
 
 export const PosView: React.FC<PosViewProps> = ({ config, canManageProducts = true }) => {
+  const dynamicDestinations =
+    config?.tables && config.tables.length > 0
+      ? ['Venta en Barra', ...config.tables]
+      : DESTINATIONS;
   const [products, setProducts] = useState<Product[]>([]);
   const [openOrders, setOpenOrders] = useState<Order[]>([]);
   const [selectedOpenOrder, setSelectedOpenOrder] = useState<Order | null>(null);
@@ -378,7 +382,7 @@ export const PosView: React.FC<PosViewProps> = ({ config, canManageProducts = tr
               onChange={(e) => setDestination(e.target.value)}
               className="flex-1 bg-white border border-slate-200 rounded-lg py-1.5 px-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#087E8B]"
             >
-              {DESTINATIONS.map((d) => (
+              {dynamicDestinations.map((d) => (
                 <option key={d} value={d}>
                   {d}
                 </option>
