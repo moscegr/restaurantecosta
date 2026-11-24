@@ -11,6 +11,8 @@ import {
   QrCode,
   AlertCircle,
   Loader2,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 import { api, saveSession } from '../../services/api';
 import type { BusinessConfig, StaffUser, UserRole } from '../../types';
@@ -68,6 +70,36 @@ export const PinLoginScreen: React.FC<PinLoginScreenProps> = ({
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const onFsChange = () => {
+      const doc = document as any;
+      setIsFullscreen(Boolean(doc.fullscreenElement || doc.webkitFullscreenElement));
+    };
+    document.addEventListener('fullscreenchange', onFsChange);
+    document.addEventListener('webkitfullscreenchange', onFsChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', onFsChange);
+      document.removeEventListener('webkitfullscreenchange', onFsChange);
+    };
+  }, []);
+
+  const toggleFullscreen = async () => {
+    const doc = document as any;
+    const el = document.documentElement as any;
+    try {
+      if (!doc.fullscreenElement && !doc.webkitFullscreenElement) {
+        if (el.requestFullscreen) await el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
+      } else {
+        if (doc.exitFullscreen) await doc.exitFullscreen();
+        else if (doc.webkitExitFullscreen) await doc.webkitExitFullscreen();
+      }
+    } catch {
+      // Browser blocked fullscreen
+    }
+  };
 
   useEffect(() => {
     api
@@ -138,14 +170,30 @@ export const PinLoginScreen: React.FC<PinLoginScreenProps> = ({
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={onOpenPublicMenu}
-                className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#087E8B] text-slate-700 hover:text-[#0B3954] text-xs font-bold flex items-center gap-1.5 shadow-xs touch-press"
-              >
-                <QrCode className="w-4 h-4 text-[#087E8B]" />
-                <span>Menú Público</span>
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={toggleFullscreen}
+                  className="p-2 rounded-xl bg-white border border-slate-200 hover:border-[#087E8B] text-slate-700 hover:text-[#0B3954] shadow-xs touch-press"
+                  title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
+                  aria-label={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
+                >
+                  {isFullscreen ? (
+                    <Minimize2 className="w-4 h-4 text-[#0B3954]" />
+                  ) : (
+                    <Maximize2 className="w-4 h-4 text-[#0B3954]" />
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onOpenPublicMenu}
+                  className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#087E8B] text-slate-700 hover:text-[#0B3954] text-xs font-bold flex items-center gap-1.5 shadow-xs touch-press"
+                >
+                  <QrCode className="w-4 h-4 text-[#087E8B]" />
+                  <span>Menú Público</span>
+                </button>
+              </div>
             </div>
 
             <div className="mb-4">
