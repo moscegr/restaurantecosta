@@ -23,6 +23,7 @@ import type {
 import { api } from '../../services/api';
 import { printThermalTicket } from '../../services/pdfService';
 import { TablesManageModal } from './TablesManageModal';
+import { HorizontalScroller } from '../HorizontalScroller';
 
 interface MeseroViewProps {
   user: StaffUser;
@@ -210,7 +211,7 @@ export const MeseroView: React.FC<MeseroViewProps> = ({ user, config, onConfigUp
           </div>
 
           {/* Carrusel de Mesas */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
+          <HorizontalScroller className="gap-2">
             {tableList.map((t) => {
               const isSelected = selectedTable === t;
               const active = activeOrders.find((o) => o.tableOrRamada === t);
@@ -248,7 +249,7 @@ export const MeseroView: React.FC<MeseroViewProps> = ({ user, config, onConfigUp
                 </button>
               );
             })}
-          </div>
+          </HorizontalScroller>
 
           {/* Buscador y Categorías */}
           <div className="space-y-2">
@@ -263,13 +264,13 @@ export const MeseroView: React.FC<MeseroViewProps> = ({ user, config, onConfigUp
               />
             </div>
 
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            <HorizontalScroller className="gap-1.5">
               {CATEGORIES.map((cat) => (
                 <button
                   key={cat}
                   type="button"
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap touch-press ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap shrink-0 touch-press ${
                     selectedCategory === cat
                       ? 'bg-slate-900 text-white'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -278,7 +279,7 @@ export const MeseroView: React.FC<MeseroViewProps> = ({ user, config, onConfigUp
                   {cat}
                 </button>
               ))}
-            </div>
+            </HorizontalScroller>
           </div>
         </div>
 

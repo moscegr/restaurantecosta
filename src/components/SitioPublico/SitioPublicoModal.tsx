@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import type { BusinessConfig, Product, ProductCategory, Room } from '../../types';
+import { HorizontalScroller } from '../HorizontalScroller';
 
 interface SitioPublicoModalProps {
   products: Product[];
@@ -243,13 +244,13 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
                   />
                 </div>
 
-                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+                <HorizontalScroller className="gap-1.5">
                   {CATEGORIES.map((cat) => (
                     <button
                       key={cat}
                       type="button"
                       onClick={() => setSelectedCategory(cat)}
-                      className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap touch-press ${
+                      className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 touch-press ${
                         selectedCategory === cat
                           ? 'bg-[#0B3954] text-white shadow-xs'
                           : 'bg-white border border-slate-200 text-slate-600'
@@ -258,7 +259,7 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
                       {cat}
                     </button>
                   ))}
-                </div>
+                </HorizontalScroller>
               </div>
 
               {/* Tarjetas horizontales compactas en móvil, grid fotográfico en tablet/PC */}

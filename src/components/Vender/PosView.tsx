@@ -24,6 +24,7 @@ import { api } from '../../services/api';
 import { QuickPayModal } from './QuickPayModal';
 import { TicketModal } from './TicketModal';
 import { ProductModal } from '../Inventario/ProductModal';
+import { HorizontalScroller } from '../HorizontalScroller';
 
 interface PosViewProps {
   config: BusinessConfig | null;
@@ -183,7 +184,7 @@ export const PosView: React.FC<PosViewProps> = ({ config, canManageProducts = tr
                 Cuentas Abiertas por Cobrar ({openOrders.length})
               </span>
             </div>
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
+            <HorizontalScroller className="gap-2">
               {openOrders.map((ord) => {
                 const isSelected = selectedOpenOrder?.id === ord.id;
                 return (
@@ -217,7 +218,7 @@ export const PosView: React.FC<PosViewProps> = ({ config, canManageProducts = tr
                   </button>
                 );
               })}
-            </div>
+            </HorizontalScroller>
           </div>
         )}
 
@@ -247,13 +248,13 @@ export const PosView: React.FC<PosViewProps> = ({ config, canManageProducts = tr
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+          <HorizontalScroller className="gap-1.5">
             {CATEGORIES.map((cat) => (
               <button
                 key={cat}
                 type="button"
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap touch-press ${
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 touch-press ${
                   selectedCategory === cat
                     ? 'bg-[#0B3954] text-white shadow-xs'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -262,7 +263,7 @@ export const PosView: React.FC<PosViewProps> = ({ config, canManageProducts = tr
                 {cat}
               </button>
             ))}
-          </div>
+          </HorizontalScroller>
         </div>
 
         {/* Grid Fotográfico de Productos */}
