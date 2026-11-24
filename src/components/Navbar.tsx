@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Wifi, WifiOff, Building2, QrCode, Settings, Menu, ChevronDown } from 'lucide-react';
+import {
+  Wifi,
+  WifiOff,
+  Building2,
+  QrCode,
+  Settings,
+  Menu,
+  ChevronDown,
+  Maximize2,
+  Minimize2,
+} from 'lucide-react';
 import type { BusinessConfig, StaffUser, UserRole } from '../types';
 
 interface NavbarProps {
@@ -30,17 +40,42 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenMobileMenu,
 }) => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     const on = () => setIsOnline(true);
     const off = () => setIsOnline(false);
+    const onFsChange = () => {
+      const doc = document as any;
+      setIsFullscreen(Boolean(doc.fullscreenElement || doc.webkitFullscreenElement));
+    };
     window.addEventListener('online', on);
     window.addEventListener('offline', off);
+    document.addEventListener('fullscreenchange', onFsChange);
+    document.addEventListener('webkitfullscreenchange', onFsChange);
     return () => {
       window.removeEventListener('online', on);
       window.removeEventListener('offline', off);
+      document.removeEventListener('fullscreenchange', onFsChange);
+      document.removeEventListener('webkitfullscreenchange', onFsChange);
     };
   }, []);
+
+  const toggleFullscreen = async () => {
+    const doc = document as any;
+    const el = document.documentElement as any;
+    try {
+      if (!doc.fullscreenElement && !doc.webkitFullscreenElement) {
+        if (el.requestFullscreen) await el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
+      } else {
+        if (doc.exitFullscreen) await doc.exitFullscreen();
+        else if (doc.webkitExitFullscreen) await doc.webkitExitFullscreen();
+      }
+    } catch {
+      // Browser blocked fullscreen
+    }
+  };
 
   const initials = user.name
     .split(' ')
@@ -98,6 +133,21 @@ export const Navbar: React.FC<NavbarProps> = ({
             </>
           )}
         </div>
+
+        {/* Botón Pantalla Completa (Modo Kiosco / Tablet) */}
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl touch-press"
+          title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
+          aria-label={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
+        >
+          {isFullscreen ? (
+            <Minimize2 className="w-4 h-4 text-[#0B3954]" />
+          ) : (
+            <Maximize2 className="w-4 h-4 text-[#0B3954]" />
+          )}
+        </button>
 
         {/* Menú QR */}
         <button
