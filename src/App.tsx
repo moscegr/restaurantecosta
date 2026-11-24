@@ -154,10 +154,7 @@ export function App() {
         pendingKitchenOrdersCount={pendingKitchenCount}
         isMobileOpen={isMobileMenuOpen}
         onCloseMobile={() => setIsMobileMenuOpen(false)}
-        onOpenPublicMenu={() => setIsPublicMenuOpen(true)}
-        onOpenSettings={() => setIsConfigOpen(true)}
         onOpenQuickExpense={() => setIsQuickExpenseOpen(true)}
-        onOpenProfile={() => setIsProfileOpen(true)}
         onLogout={handleLogout}
       />
 

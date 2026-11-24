@@ -11,8 +11,6 @@ import {
   Compass,
   PlusCircle,
   LogOut,
-  QrCode,
-  Settings,
   X,
 } from 'lucide-react';
 import type { BusinessConfig, StaffUser, UserRole } from '../types';
@@ -37,20 +35,9 @@ interface SidebarProps {
   pendingKitchenOrdersCount?: number;
   isMobileOpen: boolean;
   onCloseMobile: () => void;
-  onOpenPublicMenu: () => void;
-  onOpenSettings: () => void;
   onOpenQuickExpense: () => void;
-  onOpenProfile: () => void;
   onLogout: () => void;
 }
-
-const ROLE_LABELS: Record<UserRole, string> = {
-  admin: 'Administrador',
-  cajero: 'Cajero POS',
-  mesero: 'Mesero',
-  cocina: 'Cocina / KDS',
-  recepcion: 'Recepción',
-};
 
 const ROLE_PERMISSIONS: Record<UserRole, ActiveTab[]> = {
   admin: ['hoy', 'vender', 'mesero', 'cocina', 'cuartos', 'inventario', 'dinero', 'personal'],
@@ -74,10 +61,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   pendingKitchenOrdersCount = 0,
   isMobileOpen,
   onCloseMobile,
-  onOpenPublicMenu,
-  onOpenSettings,
   onOpenQuickExpense,
-  onOpenProfile,
   onLogout,
 }) => {
   const allowedTabs = getAllowedTabsForRole(user.role);
@@ -221,58 +205,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </nav>
       </div>
 
-      {/* Footer de Usuario */}
-      <div className="p-3 border-t border-white/10 bg-[#072436] space-y-2">
-        <div className="flex items-center justify-between px-2 py-1.5 rounded-xl bg-white/5">
-          <button
-            type="button"
-            onClick={() => {
-              onCloseMobile();
-              onOpenProfile();
-            }}
-            className="min-w-0 text-left flex-1 touch-press"
-          >
-            <p className="text-xs font-bold text-white truncate">{user.name}</p>
-            <p className="text-[10px] text-amber-300 font-semibold truncate">
-              {ROLE_LABELS[user.role]} · Ver perfil
-            </p>
-          </button>
-          <button
-            type="button"
-            onClick={onLogout}
-            className="p-1.5 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white touch-press"
-            title="Cerrar turno"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-2 gap-1.5">
-          <button
-            type="button"
-            onClick={() => {
-              onCloseMobile();
-              onOpenPublicMenu();
-            }}
-            className="flex items-center justify-center gap-1.5 py-2 px-2 bg-[#087E8B] hover:bg-[#0993A2] rounded-xl text-[11px] font-bold text-white touch-press"
-          >
-            <QrCode className="w-3.5 h-3.5 shrink-0" />
-            <span>Menú QR</span>
-          </button>
-          {user.role === 'admin' && (
-            <button
-              type="button"
-              onClick={() => {
-                onCloseMobile();
-                onOpenSettings();
-              }}
-              className="flex items-center justify-center gap-1.5 py-2 px-2 bg-white/10 hover:bg-white/15 rounded-xl text-[11px] font-bold text-slate-200 touch-press"
-            >
-              <Settings className="w-3.5 h-3.5 shrink-0" />
-              <span>Ajustes</span>
-            </button>
-          )}
-        </div>
+      {/* Footer limpio: solo Cerrar Turno rápido */}
+      <div className="p-3 border-t border-white/10 bg-[#072436]">
+        <button
+          type="button"
+          onClick={onLogout}
+          className="w-full flex items-center justify-center gap-2 py-2.5 px-3 bg-white/10 hover:bg-rose-600 text-slate-100 hover:text-white rounded-xl text-xs font-bold transition-colors touch-press"
+        >
+          <LogOut className="w-4 h-4 shrink-0" />
+          <span>Cambiar Usuario / Turno</span>
+        </button>
       </div>
     </aside>
   );
