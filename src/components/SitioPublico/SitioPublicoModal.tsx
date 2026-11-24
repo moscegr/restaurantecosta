@@ -371,14 +371,25 @@ export const SitioPublicoModal: React.FC<SitioPublicoModalProps> = ({
                 </div>
                 <div>
                   <label className="font-bold text-slate-600 block mb-1">Huéspedes</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="10"
-                    value={guests}
-                    onChange={(e) => setGuests(Number(e.target.value))}
-                    className="w-full px-2.5 py-2 rounded-xl bg-slate-50 border border-slate-200 font-bold"
-                  />
+                  <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-1">
+                    <button
+                      type="button"
+                      onClick={() => setGuests((g) => Math.max(1, g - 1))}
+                      className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-800 flex items-center justify-center touch-press"
+                      aria-label="Disminuir huéspedes"
+                    >
+                      <Minus className="w-3.5 h-3.5" />
+                    </button>
+                    <span className="font-extrabold text-sm text-slate-900">{guests}</span>
+                    <button
+                      type="button"
+                      onClick={() => setGuests((g) => Math.min(15, g + 1))}
+                      className="w-8 h-8 rounded-lg bg-[#0B3954] text-white flex items-center justify-center touch-press"
+                      aria-label="Aumentar huéspedes"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <label className="font-bold text-slate-600 block mb-1">Tu Nombre</label>
